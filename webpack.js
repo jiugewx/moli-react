@@ -19,7 +19,7 @@ module.exports = {
     ]
   },
   externals: [{
-    // "mobx": "mobx",
+    "mobx": "mobx",
     "react": "react",
     "mobx-react": "mobx-react",
   }],

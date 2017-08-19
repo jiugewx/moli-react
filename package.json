@@ -1,9 +1,8 @@
 {
-  "name": "moli",
-  "version": "0.0.6",
+  "name": "moli-react",
+  "version": "0.0.1",
   "description": "这是一个基于mobx的react最佳实践的方案探索",
   "author": "xizhi",
-  "private": true,
   "scripts": {
     "dist": " webpack --config ./webpack.js --colors"
   },
@@ -34,5 +33,23 @@
   "engines": {
     "node": ">= 4.0.0",
     "npm": ">= 3.0.0"
-  }
+  },
+  "main": "webpack.js",
+  "directories": {
+    "example": "examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jiugewx/moli.git"
+  },
+  "keywords": [
+    "moli",
+    "mobx",
+    "react",
+    "mobx-react"
+  ],
+  "bugs": {
+    "url": "https://github.com/jiugewx/moli/issues"
+  },
+  "homepage": "https://github.com/jiugewx/moli#readme"
 }

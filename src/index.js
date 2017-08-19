@@ -1,57 +1,37 @@
 import {observer} from "mobx-react";
 import React, {Component} from "react";
-import Model from "./model";
-import {isUndefined} from './util'
+import Model, {Props} from "./model";
+import {isArray, isObject, isUndefined} from './util'
 
 
 export class Moli {
   constructor() {
-    this.$models = {};
-    this.$store = {}; // 存储所有的状态
-    this.$actions = {}; // 存储所有的状态
-  }
-
-  // 包裹组件，直接注入store，actions
-  provide(Component) {
-    const self = this;
-    class Index extends React.Component {
-      constructor(props, context) {
-        super(props, context);
-        this.state = {
-          $actions: self.$actions,
-          $store: self.$store,
-        }
-      }
-
-      render() {
-        return (<Component {...this.state} {...this.props}/>);
-      }
-    }
-    return Index
-  }
-
-  // 增加Model
-  append(_Model) {
-    if (_Model instanceof Model) {
-      const name = _Model.$name;
-      this.$models[name] = _Model;
-      this.$store[name] = _Model.$state; // 只拿状态
-      this.$actions[name] = _Model.$actions; // 只拿状态
-      return this;
-    }
-    throw Error('you should append a object which is Instance of Model!')
-  }
-
-  // 删除某个model
-  remove(modelName) {
-    delete this.$models[modelName];
-    delete this.$store[modelName];
-    delete this.$actions[modelName];
+    this.$store = {};
   }
 
   // 创建一个模式
-  createModel(model) {
-    return new Model(model)
+  createModel(schema) {
+    const model = new Model(schema);
+    if (model instanceof Model) {
+      const name = model.$name;
+      this.$store[name] = model;
+      return model
+    } else {
+      throw Error('you should append a object which is Instance of Model!')
+    }
+  }
+
+  // 批量创建模式
+  createStore(schemas) {
+    if (isUndefined(schemas) || !isObject(schemas)) {
+      return this.$store
+    }
+    for (let key in schemas) {
+      schemas[key].name = key;
+      this.$store[key] = new Model(schemas[key])
+    }
+
+    return this.$store
   }
 
   // 获取store
@@ -59,84 +39,86 @@ export class Moli {
     return this.$store
   }
 
-  // 获取model
-  getModel(arg) {
+  // 注入 model [ state, 还有 action => props] 为了共享；每个组件都是用的这一套
+  inject(modelName) {
+    return (Comp) => {
+      if (Comp) {
+        return this._getInjectComponent(modelName, Comp)
+      }
+
+      return this._getInjectComponent(modelName, Component)
+    };
+  }
+
+  // 复制 model ,复用
+  copy(modelName, extendName) {
+    const self = this;
+    return (Comp) => {
+      class Index extends Component {
+        render() {
+          let model = self._getModel(extendName);// 查找是否存在
+          if (!model) {
+            let originModel = self._getModel(modelName);
+            originModel.$origin.name = extendName ? extendName : originModel.$origin.name;
+            model = new Model(originModel.$origin);
+          }
+          let props = {};
+          props['$' + model.$name] = model;
+          const Custom = observer(Comp);
+          return <Custom {...this.props} {...props}/>
+        }
+      }
+      return Index
+    };
+  }
+
+  // 获取model实例
+  _getModel(arg) {
     if (arg instanceof Model) {
       return arg;
-    } else if (typeof arg === 'string' && this.$models[arg]) {
-      return this.$models[arg]
+    } else if (typeof arg === 'string' && this.$store[arg]) {
+      return this.$store[arg]
     }
     return null
   }
 
-  // 注入 model [ state, 还有 action => props] 为了共享；每个组件都是用的这一套
-  inject(modelName) {
-    const self = this;
-    return (Comp) => {
-      class Index extends Component {
-        constructor(props, context) {
-          super(props, context);
-        }
+  // 获取model实例 组成的{$name:model}格式
+  _getMobxProps(modelName) {
+    let props = {};
+    if (typeof modelName === 'string') {
+      const model = this._getModel(modelName);
+      props['$' + model.$name] = model;
+    }
 
-        render() {
-          let props = self.getModel(modelName).inject();
-          return React.createElement(observer(Comp), self.filterProps(props, this.props))
-        }
+    if (isArray(modelName)) {
+      for (let i = 0; i < modelName.length; i++) {
+        const model = this._getModel(modelName[i]);
+        props['$' + model.$name] = model;
       }
+    }
 
-      return Index
-    };
+    return props
   }
 
-  // 继承 model [ state, 还有 action => props] 以达到复用：每个组件都用的是全新的一套
-  // 如果给继承者命名，那么就会保留状态,组件重新生成的时候，会以store里存储状态初始化
-  extend(modelName, extendName) {
+  // 获取观察组件
+  _getInjectComponent(modelName, Comp) {
     const self = this;
-    return (Comp) => {
-      class Index extends Component {
-        constructor(props, context) {
-          super(props, context);
-          this.$name = '';
-        }
-
-        // 组件卸载要去除跟踪
-        componentWillUnmount() {
-          if (isUndefined(extendName)) {
-            let newName = this.$name;
-            self.remove(newName)
-          }
-        }
-
-        render() {
-          let newName = modelName + "/" + extendName;
-          let Model = self.getModel(newName);
-          let props = Model ? Model : self.getModel(modelName).extendAs(extendName);
-          this.$name = props.$name;
-          return React.createElement(observer(Comp), self.filterProps(props, this.props))
-        }
+    return class Index extends Component {
+      render() {
+        const props = self._getMobxProps(modelName);
+        const Custom = observer(Comp);
+        return <Custom {...props} {...this.props} />
       }
-      return Index
-    };
-  }
-
-  // 输出筛选的props
-  filterProps(props, _thisProps) {
-    let newProps = {
-      $state: props.$state,
-      $actions: props.$actions,
-      $getters: props.$getters
-    };
-    return Object.assign(newProps, _thisProps);
+    }
   }
 }
 
-const moli = new Moli();
-window['moli'] = moli;
+const globalMoli = new Moli();
+window['moli'] = globalMoli;
 
-export const provide = moli.provide.bind(moli);
-export const extend = moli.extend.bind(moli);
-export const inject = moli.inject.bind(moli);
-export const getStore = moli.getStore.bind(moli);
-export const append = moli.append.bind(moli);
-export const createModel = moli.createModel.bind(moli);
-export default moli;
+export const copy = globalMoli.copy.bind(globalMoli);
+export const inject = globalMoli.inject.bind(globalMoli);
+export const createModel = globalMoli.createModel.bind(globalMoli);
+export const getStore = globalMoli.getStore.bind(globalMoli);
+export const createStore = globalMoli.createStore.bind(globalMoli);
+export default globalMoli;
