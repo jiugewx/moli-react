@@ -27,7 +27,3 @@ export const deepCopy = function (object) {
   }
   return newObject;
 };
-
-export const copy = function () {
-
-};

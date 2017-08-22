@@ -201,16 +201,18 @@ export function observer(arg1) {
     (!componentClass.prototype || !componentClass.prototype.render) && !componentClass.isReactClass && !React.Component.isPrototypeOf(componentClass)
   ) {
 
-    return observer(class extends Component {
-      static displayName = componentClass.displayName || componentClass.name;
-      static contextTypes = componentClass.contextTypes;
-      static propTypes = componentClass.propTypes;
-      static defaultProps = componentClass.defaultProps;
-
+    class Index extends Component {
       render() {
         return componentClass.call(this, this.props, this.context);
       }
-    });
+    }
+
+    Index.displayName = componentClass.displayName || componentClass.name;
+    Index.contextTypes = componentClass.contextTypes;
+    Index.propTypes = componentClass.propTypes;
+    Index.defaultProps = componentClass.defaultProps;
+
+    return observer(Index);
   }
 
   if (!componentClass) {
