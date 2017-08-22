@@ -1,6 +1,6 @@
 #!./node_modules/.bin/nscript
 /* To run this script, nscript is needed: [sudo] npm install -g nscript
-/* Publish.js, publish a new version of the npm package as found in the current directory */
+ /* Publish.js, publish a new version of the npm package as found in the current directory */
 module.exports = function (shell, npm, git) {
     var pkg = JSON.parse(shell.read('package.json'));
 
@@ -22,11 +22,14 @@ module.exports = function (shell, npm, git) {
 
         shell.write('package.json', JSON.stringify(pkg, null, 2));
 
-        npm("publish");
+        // npm("publish");
+        git("checkout", "-b", version);
         git("commit", "-am", "Published version " + version);
         git("tag", version);
-
-        git("push");
+        git("push", "origin", version);
+        git("checkout", "master");
+        git("merge", version);
+        git("push", "origin", "master");
         git("push", "--tags");
         console.log("Published!");
     }
