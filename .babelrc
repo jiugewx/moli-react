@@ -1,10 +1,9 @@
 {
   "presets": [
-    "es2015",
-    "stage-0"
+    "es2015-rollup",
+    "react"
   ],
   "plugins": [
-    "import",
     "transform-class-properties",
     "transform-decorators-legacy"
   ]
