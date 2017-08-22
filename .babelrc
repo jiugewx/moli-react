@@ -1,19 +1,11 @@
 {
   "presets": [
     "es2015",
-    "stage-0",
-    "react"
+    "stage-0"
   ],
   "plugins": [
-    "add-module-exports",
-    "transform-react-display-name",
+    "import",
     "transform-class-properties",
-    "transform-decorators-legacy",
-    [
-      "transform-react-jsx",
-      {
-        "pragma": "createElement"
-      }
-    ]
+    "transform-decorators-legacy"
   ]
 }
