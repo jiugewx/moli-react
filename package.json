@@ -1,6 +1,6 @@
 {
   "name": "moli-react",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "这是一个基于mobx的react最佳实践的方案探索",
   "author": "xizhi",
   "license": "ISC",
