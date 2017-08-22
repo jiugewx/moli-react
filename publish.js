@@ -22,7 +22,7 @@ module.exports = function (shell, npm, git) {
 
         shell.write('package.json', JSON.stringify(pkg, null, 2));
 
-        // npm("publish");
+        npm("publish");
         console.log("Published!");
         git("checkout", "-b", version);
         git("commit", "-am", "Published version " + version);
