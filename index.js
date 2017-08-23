@@ -350,6 +350,17 @@ class Model {
   }
 }
 
+// import {observer} from "mobx-react";
+const moliInjector = function (componentClass) {
+  Object.defineProperty(componentClass, 'MoliInjector', {
+    configurable: true,
+    enumerable: true,
+    writable: false,
+    value: true
+  });
+};
+
+
 class Moli {
   constructor() {
     this.$store = {};
@@ -400,22 +411,21 @@ class Moli {
   copy(modelName, extendName) {
     const self = this;
     return (Comp) => {
-      class Index extends React.Component {
-        render() {
-          let model = self._getModel(extendName);// 查找是否存在
-          if (!model) {
-            let originModel = self._getModel(modelName);
-            originModel.$origin.name = extendName ? extendName : originModel.$origin.name;
-            model = new Model(originModel.$origin);
-          }
-          let props = {};
-          props['$' + model.$name] = model;
-          const Custom = observer(Comp);
-          props = Object.assign(props, this.props);
-          return React__default.createElement(Custom, props);
+      let Custom = this._getObserveClass(Comp);
+
+      class MobxCopy extends Custom {
+        constructor(props, content) {
+          super(props, content);
+          let originModel = self._getModel(modelName);
+          originModel.$origin.name = extendName ? extendName : originModel.$origin.name;
+          let model = new Model(originModel.$origin);
+          this["$" + model.$name] = model;
         }
       }
-      return Index
+
+      moliInjector(MobxCopy);
+
+      return MobxCopy
     };
   }
 
@@ -434,35 +444,52 @@ class Moli {
     let props = {};
     if (typeof modelName === 'string') {
       const model = this._getModel(modelName);
-      props['$' + model.$name] = model;
+      props["$" + model.$name] = model;
     }
 
     if (isArray(modelName)) {
       for (let i = 0; i < modelName.length; i++) {
         const model = this._getModel(modelName[i]);
-        props['$' + model.$name] = model;
+        props["$" + model.$name] = model;
       }
     }
 
     return props
   }
 
+  _getObserveClass(CompClass) {
+    let Custom = CompClass;
+
+    if (!CompClass['MoliInjector']) {
+      Custom = observer(CompClass);
+    }
+
+    return Custom
+  }
+
   // 获取观察组件
   _getInjectComponent(modelName, Comp) {
-    const self = this;
-    return class Index extends React.Component {
-      render() {
-        let props = self._getMobxProps(modelName);
-        const Custom = observer(Comp);
-        props = Object.assign(props, this.props);
-        return React__default.createElement(Custom, props);
+    let self = this;
+    let Custom = this._getObserveClass(Comp);
+
+    class MobxInject extends Custom {
+      constructor(props, content) {
+        super(props, content);
+        const moli = self._getMobxProps(modelName);
+        for (let name in moli) {
+          this[name] = moli[name];
+        }
       }
     }
+
+    moliInjector(MobxInject);
+    return MobxInject;
   }
 }
 
 const globalMoli = new Moli();
 
+const store = globalMoli.$store;
 const copy = globalMoli.copy.bind(globalMoli);
 const inject = globalMoli.inject.bind(globalMoli);
 const createModel = globalMoli.createModel.bind(globalMoli);
@@ -470,6 +497,7 @@ const getStore = globalMoli.getStore.bind(globalMoli);
 const createStore = globalMoli.createStore.bind(globalMoli);
 
 exports.Moli = Moli;
+exports.store = store;
 exports.copy = copy;
 exports.inject = inject;
 exports.createModel = createModel;
