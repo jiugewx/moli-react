@@ -12,7 +12,7 @@ const moliInjector = function (componentClass) {
   });
 };
 
-let namePrefix = "$";
+let namePrefix = "$"; // 预制
 
 export class Moli {
   constructor() {

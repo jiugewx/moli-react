@@ -32,6 +32,7 @@ module.exports = function (shell, npm, git) {
         git("tag", "v" + version);
         git("push", "origin", "master");
         git("push", "--tags");
+        git("checkout",version)
         console.log("git over!");
     }
     else
