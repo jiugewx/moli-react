@@ -48,8 +48,8 @@ export class Moli {
     return this.store
   }
 
-  // 注入 model [ state, 还有 action => props] 为了共享；每个组件都是用的这一套
-  inject(arg) {
+  // 共享 model [ state, 还有 action => props] 为了共享；每个组件都是用的这一套
+  share(arg) {
     // 如果第一个参数是component
     if (typeof arg === "function") {
       const componentClass = arg;
@@ -66,7 +66,7 @@ export class Moli {
   }
 
   // 独立model
-  copy(schema) {
+  reuse(schema) {
     const self = this;
     return (Comp) => {
       if (isUndefined(schema) || !isObject(schema)) {
@@ -76,7 +76,7 @@ export class Moli {
       const Custom = observer(Comp);
 
       // 组件复用的时候，都要重新走 constructor 生成一个独立的model实例
-      class MoliCopy extends Custom {
+      class MoliReuse extends Custom {
         constructor(props, content) {
           super(props, content);
           const model = new Model(schema)
@@ -92,9 +92,9 @@ export class Moli {
         }
       }
 
-      moliInjector(MoliCopy);
+      moliInjector(MoliReuse);
 
-      return MoliCopy
+      return MoliReuse
     };
   }
 
@@ -157,9 +157,8 @@ export class Moli {
 
 const globalMoli = new Moli();
 
-export const store = globalMoli.store;
-export const copy = globalMoli.copy.bind(globalMoli);
-export const inject = globalMoli.inject.bind(globalMoli);
+export const reuse = globalMoli.reuse.bind(globalMoli);
+export const share = globalMoli.share.bind(globalMoli);
 export const createModel = globalMoli.createModel.bind(globalMoli);
 export const getStore = globalMoli.getStore.bind(globalMoli);
 export const createStore = globalMoli.createStore.bind(globalMoli);
