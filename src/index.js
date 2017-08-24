@@ -1,7 +1,7 @@
 import { observer } from "./observer";
 import React, { Component } from "react";
-import Model from "./model";
-import { isArray, isObject, isUndefined } from './util'
+import Model, { appendState, appendAction, appendGetter } from "./model";
+import { isArray, isObject, isUndefined, deepCopy } from './util'
 
 const moliInjector = function (componentClass) {
   Object.defineProperty(componentClass, 'MoliInjector', {
@@ -65,20 +65,30 @@ export class Moli {
     };
   }
 
-  // 复制 model ,复用
-  copy(modelName, extendName) {
+  // 独立model
+  copy(schema) {
     const self = this;
     return (Comp) => {
-      let Custom = this._getObserveClass(Comp);
-      let originModel = self._getModel(modelName);
-      originModel.$schema.name = extendName ? extendName : originModel.$schema.name;
+      if (isUndefined(schema) || !isObject(schema)) {
+        return Comp
+      }
 
-      // 组件复用的时候，都要重新生成一个独立的model实例
+      const Custom = observer(Comp);
+
+      // 组件复用的时候，都要重新走 constructor 生成一个独立的model实例
       class MoliCopy extends Custom {
         constructor(props, content) {
           super(props, content);
-          let model = new Model(originModel.$schema);
-          this["$state"] = model; // 增加一个$state属性
+          const model = new Model(schema)
+          this.$state = model;
+          this.$state.props = props;
+          this.$state.content = content;
+          // 复制actions
+          for (let name in model) {
+            if (typeof model[name] === 'function') {
+              this[name] = model[name];
+            }
+          }
         }
       }
 
