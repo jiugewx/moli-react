@@ -4,16 +4,17 @@
 module.exports = function (shell, npm, git) {
     var pkg = JSON.parse(shell.read('package.json'));
 
-    npm("run", "build");
+    // npm("run", "build");
 
     // Bump version number
-    var nrs = pkg.version.split(".");
-    nrs[2] = 1 + parseInt(nrs[2], 10);
-    var version = pkg.version = shell.prompt("Please specify the new package version of '" + pkg.name + "' (Ctrl^C to abort)", nrs.join("."));
+    var currentVersion = pkg.version;
+    var nextVersion = getNextVersion(currentVersion);
+
+    var version = pkg.version = shell.prompt("Please specify the new package version of '" + pkg.name + "' (Ctrl^C to abort)", nextVersion);
     if (!version.match(/^\d+\.\d+\.\d+$/))
         shell.exit(1, "Invalid semantic version: " + version);
 
-    // Check registery data
+    //Check registery data
     if (npm.silent().test("info", pkg.name)) {
         //package is registered in npm?
         var publishedPackageInfo = JSON.parse(npm.get("info", pkg.name, "--json"));
@@ -22,9 +23,8 @@ module.exports = function (shell, npm, git) {
 
         shell.write('package.json', JSON.stringify(pkg, null, 2));
 
-        npm("publish");
-        console.log("Published!");
-        git("checkout", "-b", version);
+        // npm("publish");
+        console.log("Published version " + version);
         git("commit", "-am", "Published version " + version);
         git("push", "origin", version);
         git("checkout", "master");
@@ -32,9 +32,26 @@ module.exports = function (shell, npm, git) {
         git("tag", "v" + version);
         git("push", "origin", "master");
         git("push", "--tags");
-        git("checkout",version)
+        var _nextVersion = getNextVersion(version);
+        git("checkout", "-b", _nextVersion);
         console.log("git over!");
     }
     else
         shell.exit(1, pkg.name + " is not an existing npm package");
 };
+
+
+function getNextVersion(currentVersion) {
+    var versionNumber = currentVersion.replace(/\./g, '');
+    versionNumber = parseInt(versionNumber);
+    var nextVersionNum = versionNumber + 1;
+    if (nextVersionNum < 100) {
+        nextVersionNum = "0" + nextVersionNum
+    } else {
+        nextVersionNum = "" + nextVersionNum
+    }
+
+    var  nextVersionArr = nextVersionNum.split('');
+    
+    return nextVersionArr.join(".")
+}
