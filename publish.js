@@ -4,7 +4,7 @@
 module.exports = function (shell, npm, git) {
     var pkg = JSON.parse(shell.read('package.json'));
 
-    // npm("run", "build");
+    npm("run", "build");
 
     // Bump version number
     var currentVersion = pkg.version;
@@ -23,7 +23,7 @@ module.exports = function (shell, npm, git) {
 
         shell.write('package.json', JSON.stringify(pkg, null, 2));
 
-        // npm("publish");
+        npm("publish");
         console.log("Published version " + version);
         git("commit", "-am", "Published version " + version);
         git("push", "origin", version);
@@ -51,7 +51,7 @@ function getNextVersion(currentVersion) {
         nextVersionNum = "" + nextVersionNum
     }
 
-    var  nextVersionArr = nextVersionNum.split('');
-    
+    var nextVersionArr = nextVersionNum.split('');
+
     return nextVersionArr.join(".")
 }
