@@ -68,12 +68,12 @@ export class Moli {
   // 只使用一个
   only(schema) {
     const self = this;
-    return (Comp) => {
+    return (ComponentClass) => {
       if (isUndefined(schema) || !isObject(schema)) {
-        return Comp
+        return ComponentClass
       }
 
-      const Custom = observer(Comp);
+      const Custom = observer(ComponentClass);
 
       // 组件复用的时候，都要重新走 constructor 生成一个独立的model实例
       class MoliReuse extends Custom {
