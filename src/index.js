@@ -73,12 +73,12 @@ export class Moli {
       let originModel = self._getModel(modelName);
       originModel.$schema.name = extendName ? extendName : originModel.$schema.name;
 
+      // 组件复用的时候，都要重新生成一个独立的model实例
       class MoliCopy extends Custom {
         constructor(props, content) {
           super(props, content);
           let model = new Model(originModel.$schema);
-          this.state = Object.assign({}, this.state);
-          this.state[namePrefix + originModel.$schema.name] = model;
+          this["$state"] = model; // 增加一个$state属性
         }
       }
 
