@@ -65,8 +65,8 @@ export class Moli {
     };
   }
 
-  // 独立model
-  reuse(schema) {
+  // 只使用一个
+  only(schema) {
     const self = this;
     return (Comp) => {
       if (isUndefined(schema) || !isObject(schema)) {
@@ -157,7 +157,7 @@ export class Moli {
 
 const globalMoli = new Moli();
 
-export const reuse = globalMoli.reuse.bind(globalMoli);
+export const only = globalMoli.only.bind(globalMoli);
 export const share = globalMoli.share.bind(globalMoli);
 export const createModel = globalMoli.createModel.bind(globalMoli);
 export const getStore = globalMoli.getStore.bind(globalMoli);
