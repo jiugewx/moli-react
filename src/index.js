@@ -49,7 +49,7 @@ export class Moli {
   }
 
   // 共享 model [ state, 还有 action => props] 为了共享；每个组件都是用的这一套
-  share(arg) {
+  inject(arg) {
     // 如果第一个参数是component
     if (typeof arg === "function") {
       const componentClass = arg;
@@ -158,7 +158,7 @@ export class Moli {
 const globalMoli = new Moli();
 
 export const only = globalMoli.only.bind(globalMoli);
-export const share = globalMoli.share.bind(globalMoli);
+export const inject = globalMoli.inject.bind(globalMoli);
 export const createModel = globalMoli.createModel.bind(globalMoli);
 export const getStore = globalMoli.getStore.bind(globalMoli);
 export const createStore = globalMoli.createStore.bind(globalMoli);
