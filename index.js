@@ -500,8 +500,8 @@ var Moli = function () {
     // 共享 model [ state, 还有 action => props] 为了共享；每个组件都是用的这一套
 
   }, {
-    key: "share",
-    value: function share(arg) {
+    key: "inject",
+    value: function inject(arg) {
       var _this = this;
 
       // 如果第一个参数是component
@@ -638,14 +638,14 @@ var Moli = function () {
 var globalMoli = new Moli();
 
 var only = globalMoli.only.bind(globalMoli);
-var share = globalMoli.share.bind(globalMoli);
+var inject = globalMoli.inject.bind(globalMoli);
 var createModel = globalMoli.createModel.bind(globalMoli);
 var getStore = globalMoli.getStore.bind(globalMoli);
 var createStore = globalMoli.createStore.bind(globalMoli);
 
 exports.Moli = Moli;
 exports.only = only;
-exports.share = share;
+exports.inject = inject;
 exports.createModel = createModel;
 exports.getStore = getStore;
 exports.createStore = createStore;
