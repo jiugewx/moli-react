@@ -49,19 +49,19 @@ export class Moli {
   }
 
   // 注入 model [ state, 还有 action => props] 为了共享；每个组件都是用的这一套
-  inject(arg1) {
+  inject(arg) {
     // 如果第一个参数是component
-    if (typeof arg1 === "function" && arg1.isReactClass) {
-      const componentClass = arg1;
+    if (typeof arg === "function") {
+      const componentClass = arg;
       return this._getInjectComponent(componentClass)
     }
 
     return (Comp) => {
       if (Comp) {
-        return this._getInjectComponent(Comp, arg1)
+        return this._getInjectComponent(Comp, arg)
       }
 
-      return this._getInjectComponent(Component, arg1)
+      return this._getInjectComponent(Component, arg)
     };
   }
 
@@ -77,7 +77,7 @@ export class Moli {
         constructor(props, content) {
           super(props, content);
           let model = new Model(originModel.$schema);
-          this.state = Object.assign({},this.state);
+          this.state = Object.assign({}, this.state);
           this.state[namePrefix + originModel.$schema.name] = model;
         }
       }
@@ -130,9 +130,9 @@ export class Moli {
   }
 
   // 获取观察组件
-  _getInjectComponent(Comp, modelName) {
+  _getInjectComponent(CompClass, modelName) {
     let self = this;
-    let Custom = this._getObserveClass(Comp);
+    let Custom = this._getObserveClass(CompClass);
 
     if (isUndefined(modelName)) {
       Custom.defaultProps = Object.assign(self.store, Custom.defaultProps);
