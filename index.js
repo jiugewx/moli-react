@@ -380,84 +380,65 @@ var deepCopy = function deepCopy(object) {
  * 提取某个模式的所有state,actions
  */
 
-var Model = function () {
-  function Model(schema) {
-    classCallCheck(this, Model);
+var Model = function Model(schema) {
+  classCallCheck(this, Model);
 
-    this.$schema = deepCopy(schema);
-    this.appendState(this.$schema.state);
-    this.appendAction(this, this.$schema.actions);
-    this.appendGetter(this, this.$schema.getters);
+  this.$schema = deepCopy(schema);
+  appendState(this, this.$schema.state);
+  appendAction(this, this.$schema.actions);
+  appendGetter(this, this.$schema.getters);
+};
+
+var appendState = function appendState(_this, state) {
+  if (typeof state === 'undefined') {
+    return _this;
   }
 
-  // 添加state
+  if ((typeof state === 'undefined' ? 'undefined' : _typeof(state)) !== 'object') {
+    console.warn('state must be a object!');
+    return _this;
+  }
 
+  for (var _key in state) {
+    mobx.extendObservable(_this, defineProperty({}, _key, state[_key]));
+  }
+};
 
-  createClass(Model, [{
-    key: 'appendState',
-    value: function appendState(state) {
-      if (typeof state === 'undefined') {
-        return this;
-      }
+// 添加getters
+var appendGetter = function appendGetter(_this, getters) {
+  if (typeof getters === 'undefined') {
+    return _this;
+  }
 
-      if ((typeof state === 'undefined' ? 'undefined' : _typeof(state)) !== 'object') {
-        console.warn('state must be a object!');
-        return this;
-      }
+  var _loop = function _loop(_key) {
+    mobx.extendObservable(_this, defineProperty({}, _key, mobx.computed(function () {
+      return getters[_key].apply(_this, arguments);
+    })));
+  };
 
-      for (var _key in state) {
-        mobx.extendObservable(this, defineProperty({}, _key, state[_key]));
-      }
-    }
+  for (var _key in getters) {
+    _loop(_key);
+  }
+};
 
-    // 添加getters
+// 添加actions
+var appendAction = function appendAction(_this, actions) {
+  if (typeof actions === 'undefined') {
+    return _this;
+  }
 
-  }, {
-    key: 'appendGetter',
-    value: function appendGetter(_this, getters) {
-      var _this2 = this;
+  var _loop2 = function _loop2(_key) {
+    var _thisAction = function _thisAction() {
+      return actions[_key].apply(_this, arguments);
+    };
 
-      if (typeof getters === 'undefined') {
-        return this;
-      }
+    _this[_key] = mobx.action.bound(_thisAction);
+  };
 
-      var _loop = function _loop(_key) {
-        mobx.extendObservable(_this2, defineProperty({}, _key, mobx.computed(function () {
-          return getters[_key].apply(_this, arguments);
-        })));
-      };
-
-      for (var _key in getters) {
-        _loop(_key);
-      }
-    }
-
-    // 添加actions
-
-  }, {
-    key: 'appendAction',
-    value: function appendAction(_this, actions) {
-      var _this3 = this;
-
-      if (typeof actions === 'undefined') {
-        return this;
-      }
-
-      var _loop2 = function _loop2(_key) {
-        var _thisAction = function _thisAction() {
-          return actions[_key].apply(_this, arguments);
-        };
-
-        _this3[_key] = mobx.action.bound(_thisAction);
-      };
-
-      for (var _key in actions) {
-        _loop2(_key);
-      }
-    }
-  }]);
-  return Model;
-}();
+  for (var _key in actions) {
+    _loop2(_key);
+  }
+};
 
 var moliInjector = function moliInjector(componentClass) {
   Object.defineProperty(componentClass, 'MoliInjector', {
@@ -468,7 +449,7 @@ var moliInjector = function moliInjector(componentClass) {
   });
 };
 
-var namePrefix = "$";
+var namePrefix = "$"; // 预制
 
 var Moli = function () {
   function Moli() {
@@ -516,61 +497,70 @@ var Moli = function () {
       return this.store;
     }
 
-    // 注入 model [ state, 还有 action => props] 为了共享；每个组件都是用的这一套
+    // 共享 model [ state, 还有 action => props] 为了共享；每个组件都是用的这一套
 
   }, {
-    key: "inject",
-    value: function inject(arg1) {
+    key: "share",
+    value: function share(arg) {
       var _this = this;
 
       // 如果第一个参数是component
-      if (typeof arg1 === "function" && arg1.isReactClass) {
-        var componentClass = arg1;
+      if (typeof arg === "function") {
+        var componentClass = arg;
         return this._getInjectComponent(componentClass);
       }
 
       return function (Comp) {
         if (Comp) {
-          return _this._getInjectComponent(Comp, arg1);
+          return _this._getInjectComponent(Comp, arg);
         }
 
-        return _this._getInjectComponent(React.Component, arg1);
+        return _this._getInjectComponent(React.Component, arg);
       };
     }
 
-    // 复制 model ,复用
+    // 只使用一个
 
   }, {
-    key: "copy",
-    value: function copy(modelName, extendName) {
-      var _this2 = this;
-
+    key: "only",
+    value: function only(schema) {
       var self = this;
-      return function (Comp) {
-        var Custom = _this2._getObserveClass(Comp);
-        var originModel = self._getModel(modelName);
-        originModel.$schema.name = extendName ? extendName : originModel.$schema.name;
+      return function (ComponentClass) {
+        if (isUndefined(schema) || !isObject(schema)) {
+          return ComponentClass;
+        }
 
-        var MoliCopy = function (_Custom) {
-          inherits(MoliCopy, _Custom);
+        var Custom = observer(ComponentClass);
 
-          function MoliCopy(props, content) {
-            classCallCheck(this, MoliCopy);
+        // 组件复用的时候，都要重新走 constructor 生成一个独立的model实例
 
-            var _this3 = possibleConstructorReturn(this, (MoliCopy.__proto__ || Object.getPrototypeOf(MoliCopy)).call(this, props, content));
+        var MoliReuse = function (_Custom) {
+          inherits(MoliReuse, _Custom);
 
-            var model = new Model(originModel.$schema);
-            _this3.state = Object.assign({}, _this3.state);
-            _this3.state[namePrefix + originModel.$schema.name] = model;
-            return _this3;
+          function MoliReuse(props, content) {
+            classCallCheck(this, MoliReuse);
+
+            var _this2 = possibleConstructorReturn(this, (MoliReuse.__proto__ || Object.getPrototypeOf(MoliReuse)).call(this, props, content));
+
+            var model = new Model(schema);
+            _this2.$state = model;
+            _this2.$state.props = props;
+            _this2.$state.content = content;
+            // 复制actions
+            for (var name in model) {
+              if (typeof model[name] === 'function') {
+                _this2[name] = model[name];
+              }
+            }
+            return _this2;
           }
 
-          return MoliCopy;
+          return MoliReuse;
         }(Custom);
 
-        moliInjector(MoliCopy);
+        moliInjector(MoliReuse);
 
-        return MoliCopy;
+        return MoliReuse;
       };
     }
 
@@ -594,16 +584,16 @@ var Moli = function () {
     value: function _getMobxProps(modelName) {
       var props = {};
       if (typeof modelName === 'string') {
-        var model = this._getModel(modelName);
-        var name = model.$schema.name;
-        props[namePrefix + name] = model;
+        var _model = this._getModel(modelName);
+        var name = _model.$schema.name;
+        props[namePrefix + name] = _model;
       }
 
       if (isArray(modelName)) {
         for (var i = 0; i < modelName.length; i++) {
-          var _model = this._getModel(modelName[i]);
-          var _name = _model.$schema.name;
-          props[namePrefix + _name] = _model;
+          var _model2 = this._getModel(modelName[i]);
+          var _name = _model2.$schema.name;
+          props[namePrefix + _name] = _model2;
         }
       }
 
@@ -628,9 +618,9 @@ var Moli = function () {
 
   }, {
     key: "_getInjectComponent",
-    value: function _getInjectComponent(Comp, modelName) {
+    value: function _getInjectComponent(CompClass, modelName) {
       var self = this;
-      var Custom = this._getObserveClass(Comp);
+      var Custom = this._getObserveClass(CompClass);
 
       if (isUndefined(modelName)) {
         Custom.defaultProps = Object.assign(self.store, Custom.defaultProps);
@@ -647,17 +637,15 @@ var Moli = function () {
 
 var globalMoli = new Moli();
 
-var store = globalMoli.store;
-var copy = globalMoli.copy.bind(globalMoli);
-var inject = globalMoli.inject.bind(globalMoli);
+var only = globalMoli.only.bind(globalMoli);
+var share = globalMoli.share.bind(globalMoli);
 var createModel = globalMoli.createModel.bind(globalMoli);
 var getStore = globalMoli.getStore.bind(globalMoli);
 var createStore = globalMoli.createStore.bind(globalMoli);
 
 exports.Moli = Moli;
-exports.store = store;
-exports.copy = copy;
-exports.inject = inject;
+exports.only = only;
+exports.share = share;
 exports.createModel = createModel;
 exports.getStore = getStore;
 exports.createStore = createStore;
