@@ -9,7 +9,7 @@ var replace = require('rollup-plugin-replace');
 var uglify = require('rollup-plugin-uglify');
 var alias = require('rollup-plugin-alias');
 
-var {rollup} = require('rollup');
+var { rollup } = require('rollup');
 
 var reactDomModulePath = require.resolve('react-dom');
 var emptyModulePath = path.resolve(__dirname, 'empty.js');
@@ -29,14 +29,15 @@ function build(target, minify) {
     namedExports[emptyModulePath] = ['unstable_batchedUpdates'];
     namedExports[reactDomModulePath] = ['unstable_batchedUpdates'];
 
-    var aliases = {};
-
-    if (target === 'native' || target === 'custom')
-        aliases['react-dom'] = emptyModulePath;
-
     var plugins = [
         replace({
             __TARGET__: JSON.stringify(target),
+        }),
+        // 编译es6
+        babel({
+            exclude: 'node_modules/**',
+            presets: ['es2015-rollup', 'react'],
+            plugins: ['transform-decorators-legacy', 'transform-class-properties'],
         }),
         alias({
             'react-dom': emptyModulePath,
@@ -45,6 +46,7 @@ function build(target, minify) {
             module: true,
             main: true,
         }),
+        // 输出
         commonjs({
             exclude: [
                 'node_modules/react/**',
@@ -54,6 +56,12 @@ function build(target, minify) {
             namedExports: namedExports,
         }),
     ];
+
+    if (minify) {
+        plugins.push(
+            uglify()
+        );
+    }
 
     plugins.push(filesize());
 
@@ -99,3 +107,4 @@ function build(target, minify) {
 }
 
 build('browser');
+build('browser', true);

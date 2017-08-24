@@ -6,11 +6,10 @@ import {deepCopy} from  './util';
  */
 export default class Model {
   constructor(schema) {
-    this.$origin = deepCopy(schema);
-    this.$name = this.$name ? this.$name : (schema.name || Math.random());
-    this.appendState(schema.state);
-    this.appendAction(this, schema.actions);
-    this.appendGetter(this, schema.getters);
+    this.$schema = deepCopy(schema);
+    this.appendState(this.$schema.state);
+    this.appendAction(this, this.$schema.actions);
+    this.appendGetter(this, this.$schema.getters);
   }
 
   // 添加state

@@ -1,8 +1,8 @@
 /**
  * observer.js部分参考了mobx-react的observer
  */
-import {Atom, Reaction, extras} from 'mobx';
-import React, {Component} from 'react';
+import { Atom, Reaction, extras } from 'mobx';
+import React, { Component } from 'react';
 
 let isUsingStaticRendering = false;
 
@@ -16,16 +16,16 @@ function mergeReactLifeHook(target, funcName, runMixinFirst = false) {
   const base = target[funcName];
   const mixinFunc = reactiveMixin[funcName];
   const f = !base
-      ? mixinFunc
-      : runMixinFirst === true
-        ? function () {
-          mixinFunc.apply(this, arguments);
-          base.apply(this, arguments);
-        }
-        : function () {
-          base.apply(this, arguments);
-          mixinFunc.apply(this, arguments);
-        }
+    ? mixinFunc
+    : runMixinFirst === true
+      ? function () {
+        mixinFunc.apply(this, arguments);
+        base.apply(this, arguments);
+      }
+      : function () {
+        base.apply(this, arguments);
+        mixinFunc.apply(this, arguments);
+      }
     ;
 
   target[funcName] = f;
@@ -196,23 +196,22 @@ const reactiveMixin = {
 export function observer(arg1) {
   const componentClass = arg1;
 
-  if (
-    typeof componentClass === "function" &&
-    (!componentClass.prototype || !componentClass.prototype.render) && !componentClass.isReactClass && !React.Component.isPrototypeOf(componentClass)
+  if (typeof componentClass === "function" && (!componentClass.prototype || !componentClass.prototype.render)
+     && !componentClass.isReactClass && !React.Component.isPrototypeOf(componentClass)
   ) {
 
-    class Index extends Component {
+    class ObserverClass extends Component {
       render() {
         return componentClass.call(this, this.props, this.context);
       }
     }
 
-    Index.displayName = componentClass.displayName || componentClass.name;
-    Index.contextTypes = componentClass.contextTypes;
-    Index.propTypes = componentClass.propTypes;
-    Index.defaultProps = componentClass.defaultProps;
+    ObserverClass.displayName = componentClass.displayName || componentClass.name;
+    ObserverClass.contextTypes = componentClass.contextTypes;
+    ObserverClass.propTypes = componentClass.propTypes;
+    ObserverClass.defaultProps = componentClass.defaultProps;
 
-    return observer(Index);
+    return observer(ObserverClass);
   }
 
   if (!componentClass) {
@@ -243,7 +242,7 @@ function mixinLifecycleEvents(target) {
   }
 }
 
-export const Observer = observer(({children}) => children());
+export const Observer = observer(({ children }) => children());
 
 Observer.propTypes = {
   children: (propValue, key, componentName, location, propFullName) => {
