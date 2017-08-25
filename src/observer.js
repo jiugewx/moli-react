@@ -197,7 +197,7 @@ export function observer(arg1) {
   const componentClass = arg1;
 
   if (typeof componentClass === "function" && (!componentClass.prototype || !componentClass.prototype.render)
-     && !componentClass.isReactClass && !React.Component.isPrototypeOf(componentClass)
+    && !componentClass.isReactClass && !React.Component.isPrototypeOf(componentClass)
   ) {
 
     class ObserverClass extends Component {

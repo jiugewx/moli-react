@@ -1,8 +1,8 @@
-import {observer} from "./observer";
-import React, {Component} from "react";
-import {action} from "mobx";
-import Model, {appendState, appendAction, appendGetter} from "./model";
-import {isArray, isObject, isUndefined, deepCopy} from './util'
+import { observer } from "./observer";
+import React, { Component } from "react";
+import { action } from "mobx";
+import Model, { appendState, appendAction, appendGetter } from "./model";
+import { isArray, isObject, isUndefined, deepCopy } from './util'
 
 const moliInjector = function (componentClass) {
   Object.defineProperty(componentClass, 'MoliInjector', {

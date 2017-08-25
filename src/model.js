@@ -1,5 +1,11 @@
-import {computed, action, extendObservable} from "mobx";
-import {deepCopy} from './util';
+import {
+  computed,
+  action,
+  extendObservable
+} from "mobx";
+import {
+  deepCopy
+} from './util';
 
 /**
  * 提取某个模式的所有state,actions
