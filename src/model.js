@@ -2,15 +2,15 @@ import { computed, action, extendObservable, useStrict } from "mobx";
 import { deepCopy } from './util';
 
 // 使用mobx的严格模式
-useStrict(true);
+// useStrict(true);
 /**
  * 提取某个模式的所有state,actions
  */
 export default class Model {
   constructor(schema) {
     Object.defineProperty(this, "$schema", {
-      configurable: false,
-      enumerable: false,
+      configurable: true,
+      enumerable: true,
       writable: false,
       value: deepCopy(schema)
     })

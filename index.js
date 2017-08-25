@@ -377,7 +377,7 @@ var deepCopy = function deepCopy(object) {
 };
 
 // 使用mobx的严格模式
-mobx.useStrict(true);
+// useStrict(true);
 /**
  * 提取某个模式的所有state,actions
  */
@@ -386,8 +386,8 @@ var Model = function Model(schema) {
   classCallCheck(this, Model);
 
   Object.defineProperty(this, "$schema", {
-    configurable: false,
-    enumerable: false,
+    configurable: true,
+    enumerable: true,
     writable: false,
     value: deepCopy(schema)
   });
