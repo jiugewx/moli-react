@@ -1,6 +1,6 @@
 import { observer } from "./observer";
 import React, { Component } from "react";
-import Model, { appendState, appendAction, appendGetter } from "./model";
+import Model from "./model";
 import { isArray, isObject, isUndefined, deepCopy } from './util'
 
 const moliInjector = function (componentClass) {
@@ -66,11 +66,10 @@ export class Moli {
   }
 
   // 只使用一个
-  only(schema) {
-    const self = this;
+  binding(schema) {
     return (ComponentClass) => {
       if (isUndefined(schema) || !isObject(schema)) {
-        return ComponentClass
+        throw Error("this `private` function should accept a object as arguments");
       }
 
       const Custom = observer(ComponentClass);
@@ -79,7 +78,7 @@ export class Moli {
       class MoliReuse extends Custom {
         constructor(props, content) {
           super(props, content);
-          const model = new Model(schema)
+          const model = new Model(schema);
           this.$state = model;
           this.$state.props = props;
           this.$state.content = content;
@@ -157,7 +156,7 @@ export class Moli {
 
 const globalMoli = new Moli();
 
-export const only = globalMoli.only.bind(globalMoli);
+export const binding = globalMoli.binding.bind(globalMoli);
 export const inject = globalMoli.inject.bind(globalMoli);
 export const createModel = globalMoli.createModel.bind(globalMoli);
 export const getStore = globalMoli.getStore.bind(globalMoli);
