@@ -1,7 +1,8 @@
-import { observer } from "./observer";
-import React, { Component } from "react";
-import Model from "./model";
-import { isArray, isObject, isUndefined, deepCopy } from './util'
+import {observer} from "./observer";
+import React, {Component} from "react";
+import {action} from "mobx";
+import Model, {appendState, appendAction, appendGetter} from "./model";
+import {isArray, isObject, isUndefined, deepCopy} from './util'
 
 const moliInjector = function (componentClass) {
   Object.defineProperty(componentClass, 'MoliInjector', {
@@ -72,28 +73,35 @@ export class Moli {
         throw Error("this `private` function should accept a object as arguments");
       }
 
-      const Custom = observer(ComponentClass);
 
-      // 组件复用的时候，都要重新走 constructor 生成一个独立的model实例
-      class MoliReuse extends Custom {
+      const Custom = this._getObserveClass(ComponentClass);
+      class Private extends Custom {
         constructor(props, content) {
           super(props, content);
-          const model = new Model(schema);
-          this.$state = model;
-          this.$state.props = props;
-          this.$state.content = content;
-          // 复制actions
-          for (let name in model) {
-            if (typeof model[name] === 'function') {
-              this[name] = model[name];
+          // 私有一个State
+          class State {
+            constructor(schema) {
+              appendState(this, schema.state);
+              appendGetter(this, schema.getters);
+              appendAction(State.prototype, this, schema.actions);
             }
           }
+          this.$state = new State(schema);
+          this.$state = Object.assign(this.$state, this);
         }
       }
 
-      moliInjector(MoliReuse);
+      const actions = schema.actions;
+      for (let _key in actions) {
+        const _thisAction = function () {
+          return actions[_key].apply(this.$state, arguments)
+        };
+        Private.prototype[_key] = action.bound(_thisAction);
+      }
 
-      return MoliReuse
+      moliInjector(Private);
+
+      return Private
     };
   }
 
