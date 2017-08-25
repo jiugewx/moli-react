@@ -7,7 +7,8 @@
 npm install moli-react --save
 ```
 
-
+## todo
+1、避免用户直接赋值obeservableValue,严格必须走action
 
 
 ## publish

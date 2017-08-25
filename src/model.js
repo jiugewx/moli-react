@@ -1,12 +1,8 @@
-import {
-  computed,
-  action,
-  extendObservable
-} from "mobx";
-import {
-  deepCopy
-} from './util';
+import { computed, action, extendObservable, useStrict } from "mobx";
+import { deepCopy } from './util';
 
+// 使用mobx的严格模式
+useStrict(true);
 /**
  * 提取某个模式的所有state,actions
  */
@@ -14,7 +10,7 @@ export default class Model {
   constructor(schema) {
     this.$schema = deepCopy(schema);
     appendState(this, this.$schema.state);
-    appendGetter(this, this.$schema.getters);
+    appendGetter(this, this, this.$schema.getters);
     appendAction(this, this, this.$schema.actions);
   }
 }
@@ -39,15 +35,15 @@ export const appendState = function (_this, state) {
 };
 
 // 添加getters
-export const appendGetter = function (_this, getters) {
+export const appendGetter = function (object, context, getters) {
   if (typeof getters === 'undefined') {
-    return _this
+    return object
   }
 
   for (let _key in getters) {
-    extendObservable(_this, {
+    extendObservable(object, {
       [_key]: computed(function () {
-        return getters[_key].apply(_this, arguments)
+        return getters[_key].apply(context, arguments)
       })
     })
   }

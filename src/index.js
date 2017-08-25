@@ -82,12 +82,11 @@ export class Moli {
           class State {
             constructor(schema) {
               appendState(this, schema.state);
-              appendGetter(this, schema.getters);
+              appendGetter(this, this, schema.getters);
               appendAction(State.prototype, this, schema.actions);
             }
           }
-          this.$state = new State(schema);
-          this.$state = Object.assign(this.$state, this);
+          this.$state = Object.assign(new State(schema), this);
         }
       }
 
