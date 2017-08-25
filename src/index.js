@@ -155,7 +155,6 @@ export class Moli {
     } else {
       Custom.defaultProps = Object.assign(self._getMobxProps(modelName), Custom.defaultProps);
     }
-
     moliInjector(Custom);
     return Custom;
   }

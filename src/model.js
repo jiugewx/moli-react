@@ -8,7 +8,12 @@ useStrict(true);
  */
 export default class Model {
   constructor(schema) {
-    this.$schema = deepCopy(schema);
+    Object.defineProperty(this, "$schema", {
+      configurable: false,
+      enumerable: false,
+      writable: false,
+      value: deepCopy(schema)
+    })
     appendState(this, this.$schema.state);
     appendGetter(this, this, this.$schema.getters);
     appendAction(this, this, this.$schema.actions);
