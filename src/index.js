@@ -1,6 +1,6 @@
 import { observer } from "./observer";
 import React, { Component } from "react";
-import { action } from "mobx";
+import mobx,{ action } from "mobx";
 import Model, { appendState, appendAction, appendGetter } from "./model";
 import { isArray, isObject, isUndefined, deepCopy } from './util'
 
@@ -12,6 +12,11 @@ const moliInjector = function (componentClass) {
     value: true
   });
 };
+
+export const useStrict = (arg) => {
+  const mode = isUndefined(arg) ? false : Boolean(arg);
+  mobx.useStrict(mode)
+}
 
 let namePrefix = "$"; // 预制
 
@@ -167,4 +172,6 @@ export const inject = globalMoli.inject.bind(globalMoli);
 export const createModel = globalMoli.createModel.bind(globalMoli);
 export const getStore = globalMoli.getStore.bind(globalMoli);
 export const createStore = globalMoli.createStore.bind(globalMoli);
+// 输出runInAction 处理异步的回调函数没有包裹在action里的问题。
+export { runInAction } from 'mobx';
 export default globalMoli;

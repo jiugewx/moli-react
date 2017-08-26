@@ -1,8 +1,6 @@
-import { computed, action, extendObservable, useStrict } from "mobx";
+import { computed, action, extendObservable } from "mobx";
 import { deepCopy } from './util';
 
-// 使用mobx的严格模式
-// useStrict(true);
 /**
  * 提取某个模式的所有state,actions
  */

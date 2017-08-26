@@ -4,6 +4,7 @@
 	(factory((global.Moli = {}),global.mobx,global.React));
 }(this, (function (exports,mobx,React) { 'use strict';
 
+var mobx__default = 'default' in mobx ? mobx['default'] : mobx;
 var React__default = 'default' in React ? React['default'] : React;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
@@ -376,8 +377,6 @@ var deepCopy = function deepCopy(object) {
   return newObject;
 };
 
-// 使用mobx的严格模式
-// useStrict(true);
 /**
  * 提取某个模式的所有state,actions
  */
@@ -454,6 +453,11 @@ var moliInjector = function moliInjector(componentClass) {
     writable: false,
     value: true
   });
+};
+
+var useStrict = function useStrict(arg) {
+  var mode = isUndefined(arg) ? false : Boolean(arg);
+  mobx__default.useStrict(mode);
 };
 
 var namePrefix = "$"; // 预制
@@ -661,6 +665,7 @@ var createModel = globalMoli.createModel.bind(globalMoli);
 var getStore = globalMoli.getStore.bind(globalMoli);
 var createStore = globalMoli.createStore.bind(globalMoli);
 
+exports.useStrict = useStrict;
 exports.Moli = Moli;
 exports.binding = binding;
 exports.inject = inject;
@@ -668,6 +673,7 @@ exports.createModel = createModel;
 exports.getStore = getStore;
 exports.createStore = createStore;
 exports['default'] = globalMoli;
+exports.runInAction = mobx.runInAction;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
