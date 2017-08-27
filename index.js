@@ -478,29 +478,83 @@ var appendAction = function appendAction(object, context, schema) {
   }
 };
 
+// state
+
+var State = function State(state) {
+    classCallCheck(this, State);
+
+    appendState(this, state);
+};
+
+// 提供一个异步进程的渲染方式
+
+
+var then = function then(fn) {
+    var _this = this,
+        _arguments = arguments;
+
+    setTimeout(function () {
+        fn = mobx.action.bound(fn);
+        fn.apply(_this, _arguments);
+    }, 0);
+};
+
+// 绑定注入$state,$then,并设置为观察组件
+function bindState(ComponentClass) {
+    if (!ComponentClass.injectMoliState) {
+        var ObserverComponent = function (_ComponentClass) {
+            inherits(ObserverComponent, _ComponentClass);
+
+            function ObserverComponent(props, content) {
+                classCallCheck(this, ObserverComponent);
+
+                // 私有一个State
+                var _this2 = possibleConstructorReturn(this, (ObserverComponent.__proto__ || Object.getPrototypeOf(ObserverComponent)).call(this, props, content));
+
+                if (_this2.$state && isObject(_this2.$state)) {
+                    _this2.$state = new State(_this2.$state);
+                }
+                return _this2;
+            }
+
+            return ObserverComponent;
+        }(ComponentClass);
+
+        // 增加了$then的方法
+
+
+        ObserverComponent.prototype.$then = then;
+
+        ObserverComponent.injectMoliState = true;
+        return getObComponentClass(ObserverComponent);
+    }
+
+    return getObComponentClass(ComponentClass);
+}
+
 // 只使用一个
 var bound = function bound(schema) {
     // 如果第一个参数是component
     if (isReactClass(schema)) {
         var componentClass = schema;
-        return boundState(componentClass);
+        return bindState(componentClass);
     }
 
     if (isUndefined(schema) || !isObject(schema)) {
-        throw Error("this `bound` function should accept a object as arguments");
+        throw Error("this `bound` function should accept a object or a React.Component as arguments");
     }
 
-    return function (ComponentClass) {
-        var Custom = getObComponentClass(ComponentClass);
+    return function (componentClass) {
+        var Custom = bindState(componentClass);
 
-        var Private = function (_Custom) {
-            inherits(Private, _Custom);
+        var BoundComponent = function (_Custom) {
+            inherits(BoundComponent, _Custom);
 
-            function Private(props, content) {
-                classCallCheck(this, Private);
+            function BoundComponent(props, content) {
+                classCallCheck(this, BoundComponent);
 
                 // 私有一个State
-                var _this = possibleConstructorReturn(this, (Private.__proto__ || Object.getPrototypeOf(Private)).call(this, props, content));
+                var _this = possibleConstructorReturn(this, (BoundComponent.__proto__ || Object.getPrototypeOf(BoundComponent)).call(this, props, content));
 
                 var State = function State(schema) {
                     classCallCheck(this, State);
@@ -514,7 +568,7 @@ var bound = function bound(schema) {
                 return _this;
             }
 
-            return Private;
+            return BoundComponent;
         }(Custom);
 
         var _loop = function _loop(_key) {
@@ -526,7 +580,7 @@ var bound = function bound(schema) {
                     enumerable: false,
                     value: mobx.action.bound(_thisAction),
                     writable: false,
-                    configurable: true
+                    configurable: false
                 });
             }
         };
@@ -535,37 +589,10 @@ var bound = function bound(schema) {
             _loop(_key);
         }
 
-        return Private;
+        return BoundComponent;
     };
 };
 
-// 绑定注入$state
-function boundState(ComponentClass) {
-    var Custom = getObComponentClass(ComponentClass);
-
-    var Private = function (_Custom2) {
-        inherits(Private, _Custom2);
-
-        function Private(props, content) {
-            classCallCheck(this, Private);
-
-            var _this2 = possibleConstructorReturn(this, (Private.__proto__ || Object.getPrototypeOf(Private)).call(this, props, content));
-
-            if (_this2.$state && isObject(_this2.$state)) {
-                for (var _key in _this2.$state) {
-                    mobx.extendObservable(_this2.$state, defineProperty({}, _key, _this2.$state[_key]));
-                }
-            }
-            return _this2;
-        }
-
-        return Private;
-    }(Custom);
-
-    return Private;
-}
-
-bound.state = boundState;
 bound.action = mobx.action.bound;
 
 var namePrefix = "$"; // 预制
@@ -581,19 +608,6 @@ var createStore = function createStore(schemas) {
     }
 
     return globalStore;
-};
-
-// 获取观察组件
-var getInjectComponent = function getInjectComponent(CompClass, modelName) {
-    var Custom = getObComponentClass(CompClass);
-
-    if (isUndefined(modelName)) {
-        Custom.defaultProps = Object.assign(globalStore, Custom.defaultProps);
-    } else {
-        Custom.defaultProps = Object.assign(getMobxProps(modelName, globalStore), Custom.defaultProps);
-    }
-
-    return Custom;
 };
 
 // 获取model实例
@@ -640,13 +654,25 @@ var inject = function inject(arg) {
     };
 };
 
+// 获取观察组件
+var getInjectComponent = function getInjectComponent(componentClass, modelName) {
+    var Custom = bindState(componentClass);
+
+    if (isUndefined(modelName)) {
+        Custom.defaultProps = Object.assign(globalStore, Custom.defaultProps);
+    } else {
+        Custom.defaultProps = Object.assign(getMobxProps(modelName, globalStore), Custom.defaultProps);
+    }
+
+    return Custom;
+};
+
 exports.bound = bound;
 exports.inject = inject;
 exports.createStore = createStore;
 exports.observer = observer;
-exports.runInAction = mobx.runInAction;
+exports.then = then;
 exports.useStrict = mobx.useStrict;
-exports.action = mobx.action;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
