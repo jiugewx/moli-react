@@ -1,11 +1,14 @@
 import { computed, action, extendObservable } from "mobx";
-import { deepCopy } from './util';
+import { deepCopy, isObject, isUndefined, isFunction } from './utils';
 
 /**
  * 提取某个模式的所有state,actions
  */
 export default class Model {
   constructor(schema) {
+    if (!isObject(schema)) {
+      throw Error('[moli] Model need argument which type is a Object')
+    }
     Object.defineProperty(this, "$schema", {
       configurable: true,
       enumerable: true,
@@ -13,8 +16,8 @@ export default class Model {
       value: deepCopy(schema)
     })
     appendState(this, this.$schema.state);
-    appendGetter(this, this, this.$schema.getters);
-    appendAction(this, this, this.$schema.actions);
+    appendGetter(this, this, this.$schema.computed);
+    appendAction(this, this, this.$schema);
   }
 }
 
@@ -37,32 +40,39 @@ export const appendState = function (_this, state) {
   }
 };
 
-// 添加getters
-export const appendGetter = function (object, context, getters) {
-  if (typeof getters === 'undefined') {
+// 添加compute
+export const appendGetter = function (object, context, computeds) {
+  if (isUndefined(computeds)) {
     return object
   }
 
-  for (let _key in getters) {
+  for (let _key in computeds) {
     extendObservable(object, {
       [_key]: computed(function () {
-        return getters[_key].apply(context, arguments)
+        return computeds[_key].apply(context, arguments)
       })
     })
   }
 };
 
 // 添加actions
-export const appendAction = function (object, context, actions) {
-  if (typeof actions === 'undefined') {
+export const appendAction = function (object, context, schema) {
+  if (isUndefined(schema)) {
     return object;
   }
 
-  for (let _key in actions) {
-    const _thisAction = function () {
-      return actions[_key].apply(context, arguments)
-    };
-
-    object[_key] = action.bound(_thisAction);
+  for (let _key in schema) {
+    const pro = schema[_key];
+    if (isFunction(pro)) {
+      const _thisAction = function () {
+        return pro.apply(context, arguments)
+      };
+      Object.defineProperty(object, _key, {
+        enumerable: false,
+        value: action.bound(_thisAction),
+        writable: false,
+        configurable: true,
+      })
+    }
   }
 };

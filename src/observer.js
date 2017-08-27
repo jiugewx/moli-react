@@ -244,6 +244,18 @@ function mixinLifecycleEvents(target) {
 
 export const Observer = observer(({ children }) => children());
 
+
+// 获得被观察的 getObComponentClass
+export const getObComponentClass = function (componentClass) {
+  let Custom = componentClass;
+
+  if (!componentClass['isMobXReactObserver']) {
+    Custom = observer(componentClass);
+  }
+
+  return Custom
+}
+
 Observer.propTypes = {
   children: (propValue, key, componentName, location, propFullName) => {
     if (typeof propValue[key] !== 'function')
