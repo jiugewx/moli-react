@@ -1,4 +1,4 @@
-import { isObject, Enumerable } from './utils'
+import { isObject, Enumerable, isFunction } from './utils'
 import { getObComponentClass } from "./observer";
 import { appendState } from "./model";
 import * as mobx from "mobx";
@@ -20,8 +20,7 @@ export const then = function (fn) {
 }
 
 
-
-// 绑定注入$state,$then,并设置为观察组件
+// 绑定注入$state,$then,$action并设置为观察组件
 export function bindState(ComponentClass) {
     if (!ComponentClass.injectMoliState) {
         class ObserverComponent extends ComponentClass {

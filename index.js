@@ -143,6 +143,15 @@ var deepCopy = function deepCopy(object) {
   return newObject;
 };
 
+var Enumerable = function Enumerable(target, propertyName, value) {
+  Object.defineProperty(target, propertyName, {
+    enumerable: false,
+    value: value,
+    writable: false,
+    configurable: false
+  });
+};
+
 /**
  * observer.js部分参考了mobx-react的observer
  */
@@ -499,7 +508,7 @@ var then = function then(fn) {
     }, 0);
 };
 
-// 绑定注入$state,$then,并设置为观察组件
+// 绑定注入$state,$then,$action并设置为观察组件
 function bindState(ComponentClass) {
     if (!ComponentClass.injectMoliState) {
         var ObserverComponent = function (_ComponentClass) {
@@ -523,7 +532,7 @@ function bindState(ComponentClass) {
         // 增加了$then的方法
 
 
-        ObserverComponent.prototype.$then = then;
+        Enumerable(ObserverComponent.prototype, "$then", then);
 
         ObserverComponent.injectMoliState = true;
         return getObComponentClass(ObserverComponent);
@@ -564,6 +573,8 @@ var bound = function bound(schema) {
                     appendAction(State.prototype, this, schema);
                 };
 
+                Enumerable(State.prototype, "$then", then);
+
                 _this.$state = Object.assign(new State(schema), _this);
                 return _this;
             }
@@ -576,12 +587,7 @@ var bound = function bound(schema) {
                 var _thisAction = function _thisAction() {
                     return schema[_key].apply(this.$state, arguments);
                 };
-                Object.defineProperty(Custom.prototype, _key, {
-                    enumerable: false,
-                    value: mobx.action.bound(_thisAction),
-                    writable: false,
-                    configurable: false
-                });
+                Enumerable(Custom.prototype, _key, mobx.action.bound(_thisAction));
             }
         };
 
@@ -596,82 +602,102 @@ var bound = function bound(schema) {
 bound.action = mobx.action.bound;
 
 var namePrefix = "$"; // 预制
-var globalStore = {};
 
-var createStore = function createStore(schemas) {
-    if (isUndefined(schemas) || !isObject(schemas)) {
-        throw Error('[moli] createStore need argument which type is a Object');
-    }
-    for (var key in schemas) {
-        var schema = schemas[key];
-        globalStore[namePrefix + key] = new Model(schema);
+var Store = function () {
+    function Store() {
+        classCallCheck(this, Store);
     }
 
-    return globalStore;
-};
+    createClass(Store, [{
+        key: 'createStore',
+        value: function createStore(schemas) {
+            if (isUndefined(schemas) || !isObject(schemas)) {
+                throw Error('[moli] createStore need argument which type is a Object');
+            }
+            for (var key in schemas) {
+                var schema = schemas[key];
+                this[namePrefix + key] = new Model(schema);
+            }
 
-// 获取model实例
-function getModel(arg, store) {
-    if (isString(arg) && store[namePrefix + arg]) {
-        return store[namePrefix + arg];
-    }
-    return null;
-}
-
-function getMobxProps(modelName, store) {
-    var props = {};
-    if (isString(modelName)) {
-        var model = getModel(modelName, store);
-        var name = modelName;
-        props[namePrefix + name] = model;
-    }
-
-    if (isArray(modelName)) {
-        for (var i = 0; i < modelName.length; i++) {
-            var _model = getModel(modelName[i], store);
-            var _name = modelName[i];
-            props[namePrefix + _name] = _model;
+            return this;
         }
-    }
+    }, {
+        key: 'getStore',
+        value: function getStore() {
+            return this;
+        }
+    }, {
+        key: 'getModel',
+        value: function getModel(arg) {
+            if (isString(arg) && this[namePrefix + arg]) {
+                return this[namePrefix + arg];
+            }
+            return null;
+        }
+    }, {
+        key: 'getModelProps',
+        value: function getModelProps(modelName) {
+            var props = {};
+            if (isUndefined(modelName)) {
+                return this;
+            }
 
-    return props;
-}
+            if (isString(modelName)) {
+                var model = this.getModel(modelName, this);
+                var name = modelName;
+                props[namePrefix + name] = model;
+            }
+
+            if (isArray(modelName)) {
+                for (var i = 0; i < modelName.length; i++) {
+                    var _model = this.getModel(modelName[i], this);
+                    var _name = modelName[i];
+                    props[namePrefix + _name] = _model;
+                }
+            }
+
+            return props;
+        }
+    }, {
+        key: 'InjectProps',
+        value: function InjectProps(componentClass, modelName) {
+            var Custom = bindState(componentClass);
+            var props = this.getModelProps(modelName);
+
+            Custom.defaultProps = Object.assign(props, Custom.defaultProps);
+
+            return Custom;
+        }
+    }]);
+    return Store;
+}();
+
+var globalStore = new Store();
+var createStore = globalStore.createStore.bind(globalStore);
+var InjectProps = globalStore.InjectProps.bind(globalStore);
 
 // 共享 model [ state, 还有 action => props] 为了共享；每个组件都是用的这一套
 var inject = function inject(arg) {
     // 如果第一个参数是component
     if (isReactClass(arg)) {
         var componentClass = arg;
-        return getInjectComponent(componentClass);
+        return InjectProps(componentClass);
     }
 
     return function (Comp) {
         if (Comp) {
-            return getInjectComponent(Comp, arg);
+            return InjectProps(Comp, arg);
         }
 
-        return getInjectComponent(React.Component, arg);
+        return InjectProps(React.Component, arg);
     };
 };
 
-// 获取观察组件
-var getInjectComponent = function getInjectComponent(componentClass, modelName) {
-    var Custom = bindState(componentClass);
-
-    if (isUndefined(modelName)) {
-        Custom.defaultProps = Object.assign(globalStore, Custom.defaultProps);
-    } else {
-        Custom.defaultProps = Object.assign(getMobxProps(modelName, globalStore), Custom.defaultProps);
-    }
-
-    return Custom;
-};
+//export { start } from './start';
 
 exports.bound = bound;
 exports.inject = inject;
 exports.createStore = createStore;
-exports.observer = observer;
-exports.then = then;
 exports.useStrict = mobx.useStrict;
 
 Object.defineProperty(exports, '__esModule', { value: true });

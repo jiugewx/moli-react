@@ -1,44 +1,67 @@
 import { isUndefined, isObject, isArray, isFunction, isString } from './utils'
+import { bindState } from './state';
 import Model from "./model";
 
 let namePrefix = "$"; // 预制
-export let globalStore = {};
 
-export const createStore = function (schemas) {
-    if (isUndefined(schemas) || !isObject(schemas)) {
-        throw Error('[moli] createStore need argument which type is a Object')
-    }
-    for (let key in schemas) {
-        const schema = schemas[key];
-        globalStore[namePrefix + key] = new Model(schema)
-    }
+class Store {
+    createStore(schemas) {
+        if (isUndefined(schemas) || !isObject(schemas)) {
+            throw Error('[moli] createStore need argument which type is a Object')
+        }
+        for (let key in schemas) {
+            const schema = schemas[key];
+            this[namePrefix + key] = new Model(schema)
+        }
 
-    return globalStore
-}
-
-// 获取model实例
-export function getModel(arg, store) {
-    if (isString(arg) && store[namePrefix + arg]) {
-        return store[namePrefix + arg]
-    }
-    return null
-}
-
-export function getMobxProps(modelName, store) {
-    let props = {};
-    if (isString(modelName)) {
-        const model = getModel(modelName, store);
-        const name = modelName;
-        props[namePrefix + name] = model;
+        return this;
     }
 
-    if (isArray(modelName)) {
-        for (let i = 0; i < modelName.length; i++) {
-            const model = getModel(modelName[i], store);
-            const name = modelName[i];
+    getStore() {
+        return this;
+    }
+
+    getModel(arg) {
+        if (isString(arg) && this[namePrefix + arg]) {
+            return this[namePrefix + arg]
+        }
+        return null
+    }
+
+    getModelProps(modelName) {
+        let props = {};
+        if (isUndefined(modelName)) {
+            return this
+        }
+
+        if (isString(modelName)) {
+            const model = this.getModel(modelName, this);
+            const name = modelName;
             props[namePrefix + name] = model;
         }
+
+        if (isArray(modelName)) {
+            for (let i = 0; i < modelName.length; i++) {
+                const model = this.getModel(modelName[i], this);
+                const name = modelName[i];
+                props[namePrefix + name] = model;
+            }
+        }
+
+        return props
     }
 
-    return props
+
+    InjectProps(componentClass, modelName) {
+        let Custom = bindState(componentClass);
+        let props = this.getModelProps(modelName);
+
+        Custom.defaultProps = Object.assign(props, Custom.defaultProps);
+
+        return Custom;
+    }
 }
+
+export const globalStore = new Store();
+export const createStore = globalStore.createStore.bind(globalStore);
+export const InjectProps = globalStore.InjectProps.bind(globalStore);

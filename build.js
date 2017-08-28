@@ -76,11 +76,11 @@ function build(target, minify) {
         input: 'src/index.js',
         external: function (moduleId) {
             return ({
-                react: trueFn,
+                'react': trueFn,
                 'react-dom': function () {
                     return target === 'browser';
                 },
-                mobx: trueFn,
+                'mobx': trueFn,
             }[moduleId] || falseFn)();
         },
         plugins: plugins,
