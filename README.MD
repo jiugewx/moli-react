@@ -116,16 +116,16 @@ const header = {
     },
     handleKeyDown(event) {
         if (event.which === ESCAPE_KEY) {
-        this.cancel();
+            this.cancel();
         } else if (event.which === ENTER_KEY) {
-        this.handleSubmit(event);
+            this.handleSubmit(event);
         }
     },
     handleSubmit() {
         const { $list } = this.props;
         if (this.value.trim() !== '') {
-        $list.addItem(this.value);
-        this.cancel();
+            $list.addItem(this.value);
+            this.cancel();
         }
     }
 }
@@ -167,7 +167,7 @@ export default class TodoItem extends React.Component {
         }
     }
     
-    @bound.action // 在严格模式下，必须要使用 bound.action 将改变 $state 的 function 包裹一下。
+    @bound.action // 在严格模式下，必须要使用 @bound.action 将改变 $state 的 function 包裹一下。
     handleDoubleClick(item = {}) {
         this.$state.value = item.value || '';
         this.$state.editMode = true;
