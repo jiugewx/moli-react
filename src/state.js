@@ -1,4 +1,4 @@
-import { isObject } from './utils'
+import { isObject, Enumerable } from './utils'
 import { getObComponentClass } from "./observer";
 import { appendState } from "./model";
 import * as mobx from "mobx";
@@ -35,7 +35,7 @@ export function bindState(ComponentClass) {
         }
 
         // 增加了$then的方法
-        ObserverComponent.prototype.$then = then
+        Enumerable(ObserverComponent.prototype, "$then", then)
 
         ObserverComponent.injectMoliState = true
         return getObComponentClass(ObserverComponent)

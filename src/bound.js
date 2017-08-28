@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import { isArray, isObject, isUndefined, isFunction, deepCopy, isReactClass } from './utils'
+import { isArray, isObject, isUndefined, isFunction, deepCopy, isReactClass, Enumerable } from './utils'
 import { observer, getObComponentClass } from "./observer";
 import { appendState, appendAction, appendGetter } from "./model";
-import { bindState } from './state';
+import { bindState, then } from './state';
 import * as mobx from "mobx";
 
 // 只使用一个
@@ -31,6 +31,9 @@ export const bound = function (schema) {
                         appendAction(State.prototype, this, schema);
                     }
                 }
+
+                Enumerable(State.prototype, "$then", then)
+
                 this.$state = Object.assign(new State(schema), this);
             }
         }
@@ -40,12 +43,7 @@ export const bound = function (schema) {
                 const _thisAction = function () {
                     return schema[_key].apply(this.$state, arguments)
                 };
-                Object.defineProperty(Custom.prototype, _key, {
-                    enumerable: false,
-                    value: mobx.action.bound(_thisAction),
-                    writable: false,
-                    configurable: false,
-                })
+                Enumerable(Custom.prototype, _key, mobx.action.bound(_thisAction))
             }
         }
 

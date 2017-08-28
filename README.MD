@@ -13,7 +13,7 @@ npm install moli-react --save
 ```
 
 ## 特征
-使用了`inject`,`bound`两个装饰器的ComponentClass，均有`$state`,`$then`两个属性，通过`this.$state`,`this.$then`可以访问到
+使用了`inject`,`bound`两个装饰器的ComponentClass，ComponentClass均有`$state`,`$then`两个属性，通过`this.$state`,`this.$then`可以访问到。
 `this.$state`里的值都是observabled;
 `this.$then` 是`this.$state`发生变化,导致render之后的回调
 
@@ -187,10 +187,8 @@ export default class TodoItem extends React.Component {
 }
  ```
 使用 `@bound(schema)`与`@bound`的区别在于:
-* `@bound(schema)`不能使用`this.$state`,`this.$then`，而可以直接使用`this`,`then`函数达到相应的效果。
+* `@bound(schema)`的`schema`中不能使用`this.$state`,而可以直接使用`this`。
 * `@bound(schema)`的`schema`定义的所有的`function`都是`action`。
-
-### then render之后的回调。
 
 
 ## publish

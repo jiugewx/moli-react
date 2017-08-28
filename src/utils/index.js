@@ -20,8 +20,8 @@ export const isObject = function (val) {
 
 export const isReactClass = function (componentClass) {
   return isFunction(componentClass) && (
-    componentClass.prototype 
-    && !!componentClass.prototype.render 
+    componentClass.prototype
+    && !!componentClass.prototype.render
     && !!componentClass.prototype.setState
     && !!componentClass.prototype.forceUpdate
   )
@@ -44,3 +44,12 @@ export const deepCopy = function (object) {
   }
   return newObject;
 };
+
+export const Enumerable = function (target, propertyName, value) {
+  Object.defineProperty(target, propertyName, {
+    enumerable: false,
+    value: value,
+    writable: false,
+    configurable: false,
+  })
+}
