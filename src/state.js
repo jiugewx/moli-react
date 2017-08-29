@@ -3,7 +3,6 @@ import { getObComponentClass } from "./observer";
 import { appendState } from "./model";
 import * as mobx from "mobx";
 
-
 // state
 class State {
     constructor(state) {
@@ -20,7 +19,7 @@ export const then = function (fn) {
 }
 
 
-// 绑定注入$state,$then,$action并设置为观察组件
+// 绑定注入$state,$then并设置为观察组件
 export function bindState(ComponentClass) {
     if (!ComponentClass.injectMoliState) {
         class ObserverComponent extends ComponentClass {

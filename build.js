@@ -59,7 +59,32 @@ function build(target, minify) {
 
     if (minify) {
         plugins.push(
-            uglify()
+            uglify({
+                compress: {
+                    warnings: false,  //当删除没有用处的代码时，显示警告
+                    drop_console: true, // 传true的话会干掉console.*函数。
+                    dead_code: true,
+                    drop_debugger:true,
+                    if_return:true // 优化 if/return 和 if/continue
+                },
+                mangle: {
+                    properties: true,
+                },
+                nameCache: null, // or specify a name cache object
+                ie8: true
+            })
+        );
+    } else {
+        plugins.push(
+            uglify({
+                output: {
+                    beautify: true,  // 格式化
+                    preamble: "/* author:xizhi */",   // 文件头
+                    quote_style: 2
+                },
+                mangle: false, // 是否混淆
+                ie8: true//支持IE8
+            })
         );
     }
 

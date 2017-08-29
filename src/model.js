@@ -1,5 +1,5 @@
 import { computed, action, extendObservable } from "mobx";
-import { deepCopy, isObject, isUndefined, isFunction } from './utils';
+import { deepCopy, isObject, isUndefined, isFunction, Enumerable } from './utils';
 
 /**
  * 提取某个模式的所有state,actions
@@ -9,12 +9,7 @@ export default class Model {
     if (!isObject(schema)) {
       throw Error('[moli] Model need argument which type is a Object')
     }
-    Object.defineProperty(this, "$schema", {
-      configurable: true,
-      enumerable: true,
-      writable: false,
-      value: deepCopy(schema)
-    })
+    Enumerable(this, "$schema", deepCopy(schema))
     appendState(this, this.$schema.state);
     appendGetter(this, this, this.$schema.computed);
     appendAction(this, this, this.$schema);
@@ -67,12 +62,7 @@ export const appendAction = function (object, context, schema) {
       const _thisAction = function () {
         return pro.apply(context, arguments)
       };
-      Object.defineProperty(object, _key, {
-        enumerable: false,
-        value: action.bound(_thisAction),
-        writable: false,
-        configurable: true,
-      })
+      Enumerable(object, _key, action.bound(_thisAction))
     }
   }
 };

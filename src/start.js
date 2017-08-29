@@ -23,6 +23,6 @@ export function createProvider(storeKey = 'store', subKey) {
 
 const Provider = createProvider()
 
-export const start =  function(RootTag, DomElement) {
+export const start =  function() {
     render.apply(this, arguments)
 }

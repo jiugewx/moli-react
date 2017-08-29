@@ -1,5 +1,6 @@
 import { isUndefined, isObject, isArray, isFunction, isString } from './utils'
 import { bindState } from './state';
+import { useStrict } from 'mobx';
 import Model from "./model";
 
 let namePrefix = "$"; // 预制
@@ -51,8 +52,13 @@ class Store {
         return props
     }
 
+    // 使用严格模式
+    useStrict(strictMode) {
+        useStrict(strictMode)
+    }
 
-    InjectProps(componentClass, modelName) {
+    // 注入props
+    injectProps(componentClass, modelName) {
         let Custom = bindState(componentClass);
         let props = this.getModelProps(modelName);
 
@@ -64,4 +70,4 @@ class Store {
 
 export const globalStore = new Store();
 export const createStore = globalStore.createStore.bind(globalStore);
-export const InjectProps = globalStore.InjectProps.bind(globalStore);
+export const injectProps = globalStore.injectProps.bind(globalStore);

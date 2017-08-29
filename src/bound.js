@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import { isArray, isObject, isUndefined, isFunction, deepCopy, isReactClass, Enumerable } from './utils'
-import { observer, getObComponentClass } from "./observer";
+import { isObject, isUndefined, isFunction, isReactClass, Enumerable } from './utils'
 import { appendState, appendAction, appendGetter } from "./model";
 import { bindState, then } from './state';
 import * as mobx from "mobx";
