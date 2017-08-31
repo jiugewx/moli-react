@@ -16,16 +16,16 @@ function mergeReactLifeHook(target, funcName, runMixinFirst = false) {
   const base = target[funcName];
   const mixinFunc = reactiveMixin[funcName];
   const f = !base
-    ? mixinFunc
-    : runMixinFirst === true
-      ? function () {
-        mixinFunc.apply(this, arguments);
-        base.apply(this, arguments);
-      }
-      : function () {
-        base.apply(this, arguments);
-        mixinFunc.apply(this, arguments);
-      }
+      ? mixinFunc
+      : runMixinFirst === true
+        ? function () {
+          mixinFunc.apply(this, arguments);
+          base.apply(this, arguments);
+        }
+        : function () {
+          base.apply(this, arguments);
+          mixinFunc.apply(this, arguments);
+        }
     ;
 
   target[funcName] = f;

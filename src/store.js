@@ -6,66 +6,66 @@ import Model from "./model";
 let namePrefix = "$"; // 预制
 
 class Store {
-    createStore(schemas) {
-        if (isUndefined(schemas) || !isObject(schemas)) {
-            throw Error('[moli] createStore need argument which type is a Object')
-        }
-        for (let key in schemas) {
-            const schema = schemas[key];
-            this[namePrefix + key] = new Model(schema)
-        }
-
-        return this;
+  createStore(schemas) {
+    if (isUndefined(schemas) || !isObject(schemas)) {
+      throw Error('[moli] createStore need argument which type is a Object')
+    }
+    for (let key in schemas) {
+      const schema = schemas[key];
+      this[namePrefix + key] = new Model(schema)
     }
 
-    getStore() {
-        return this;
+    return this;
+  }
+
+  getStore() {
+    return this;
+  }
+
+  getModel(arg) {
+    if (isString(arg) && this[namePrefix + arg]) {
+      return this[namePrefix + arg]
+    }
+    return null
+  }
+
+  getModelProps(modelName) {
+    let props = {};
+    if (isUndefined(modelName)) {
+      return this
     }
 
-    getModel(arg) {
-        if (isString(arg) && this[namePrefix + arg]) {
-            return this[namePrefix + arg]
-        }
-        return null
+    if (isString(modelName)) {
+      const model = this.getModel(modelName, this);
+      const name = modelName;
+      props[namePrefix + name] = model;
     }
 
-    getModelProps(modelName) {
-        let props = {};
-        if (isUndefined(modelName)) {
-            return this
-        }
-
-        if (isString(modelName)) {
-            const model = this.getModel(modelName, this);
-            const name = modelName;
-            props[namePrefix + name] = model;
-        }
-
-        if (isArray(modelName)) {
-            for (let i = 0; i < modelName.length; i++) {
-                const model = this.getModel(modelName[i], this);
-                const name = modelName[i];
-                props[namePrefix + name] = model;
-            }
-        }
-
-        return props
+    if (isArray(modelName)) {
+      for (let i = 0; i < modelName.length; i++) {
+        const model = this.getModel(modelName[i], this);
+        const name = modelName[i];
+        props[namePrefix + name] = model;
+      }
     }
 
-    // 使用严格模式
-    useStrict(strictMode) {
-        useStrict(strictMode)
-    }
+    return props
+  }
 
-    // 注入props
-    injectProps(componentClass, modelName) {
-        let Custom = bindState(componentClass);
-        let props = this.getModelProps(modelName);
+  // 使用严格模式
+  useStrict(strictMode) {
+    useStrict(strictMode)
+  }
 
-        Custom.defaultProps = Object.assign(props, Custom.defaultProps);
+  // 注入props
+  injectProps(componentClass, modelName) {
+    let Custom = bindState(componentClass);
+    let props = this.getModelProps(modelName);
 
-        return Custom;
-    }
+    Custom.defaultProps = Object.assign(props, Custom.defaultProps);
+
+    return Custom;
+  }
 }
 
 export const globalStore = new Store();
