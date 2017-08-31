@@ -100,13 +100,13 @@ export default class List extends Component {
 }
 ```
 
-### action 绑定私有属性
-action 可以直接注入到ComponentClass里，如
+### bound 绑定私有属性
+bound 将使得ComponentClass的state变成可观察，增加了this.then方法
 
 ```
-import {action} from 'moli-react';
+import {action,bound} from 'moli-react';
 
-@action // 注册在ComponentClass上面可以让组件的this.state变成可以观察的，增加了this.then的异步方法
+@bound // 注册在ComponentClass上面可以让组件的this.state变成可以观察的，增加了this.then的异步方法
 export default class TodoItem extends React.Component {
     constructor(props) {
         super(props)
@@ -137,6 +137,9 @@ export default class TodoItem extends React.Component {
 }
  ```
 
+### action 
+
+action = mobx.action.bound
 
 ## publish
 

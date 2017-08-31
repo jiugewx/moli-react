@@ -1,3 +1,3 @@
-export { action } from './action';// 绑定
+export { action, bound } from './bound';// 绑定
 export { inject } from './inject';
 export { createStore } from './store';
