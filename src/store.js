@@ -1,4 +1,4 @@
-import { isUndefined, isObject, isArray, isFunction, isString } from './utils'
+import { isUndefined, isObject, isArray, isString } from './utils'
 import { bindState } from './state';
 import { useStrict } from 'mobx';
 import Model from "./model";

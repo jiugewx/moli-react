@@ -51,13 +51,15 @@
                 function ObserverComponent(props, content) {
                     classCallCheck(this, ObserverComponent);
                     var _this2 = possibleConstructorReturn(this, (ObserverComponent.__proto__ || Object.getPrototypeOf(ObserverComponent)).call(this, props, content));
-                    return _this2.$state && isObject(_this2.$state) && (_this2.$state = new State(_this2.$state)), 
-                    _this2;
+                    return _this2.state = new State(_this2.state), _this2;
                 }
                 return inherits(ObserverComponent, ComponentClass), ObserverComponent;
             }();
-            return Enumerable(ObserverComponent.prototype, "$then", then), ObserverComponent.injectMoliState = !0, 
-            getObComponentClass(ObserverComponent);
+            return Enumerable(ObserverComponent.prototype, "then", then), ObserverComponent.injectMoliState = !0, 
+            ObserverComponent.prototype.setState = mobx.action.bound(function(data, callback) {
+                for (var name in data) this.state[name] = data[name];
+                callback && this.then(callback);
+            }), getObComponentClass(ObserverComponent);
         }
         return getObComponentClass(ComponentClass);
     }
@@ -128,30 +130,6 @@
             writable: !1,
             configurable: !1
         });
-    }, Model = function Model(schema) {
-        if (classCallCheck(this, Model), !isObject(schema)) throw Error("[moli] Model need argument which type is a Object");
-        Enumerable(this, "$schema", deepCopy(schema)), appendState(this, this.$schema.state), 
-        appendGetter(this, this, this.$schema.computed), appendAction(this, this, this.$schema);
-    }, appendState = function(_this, state) {
-        if (void 0 === state) return _this;
-        if ("object" !== (void 0 === state ? "undefined" : _typeof(state))) return console.warn("state must be a object!"), 
-        _this;
-        for (var _key in state) mobx.extendObservable(_this, defineProperty({}, _key, state[_key]));
-    }, appendGetter = function(object, context, computeds) {
-        if (isUndefined(computeds)) return object;
-        for (var _key in computeds) !function(_key) {
-            mobx.extendObservable(object, defineProperty({}, _key, mobx.computed(function() {
-                return computeds[_key].apply(context, arguments);
-            })));
-        }(_key);
-    }, appendAction = function(object, context, schema) {
-        if (isUndefined(schema)) return object;
-        for (var _key in schema) !function(_key) {
-            var pro = schema[_key];
-            isFunction(pro) && Enumerable(object, _key, mobx.action.bound(function() {
-                return pro.apply(context, arguments);
-            }));
-        }(_key);
     }, reactiveMixin = {
         componentWillMount: function() {
             function makePropertyObservableReference(propName) {
@@ -216,39 +194,38 @@
             if ("function" != typeof propValue[key]) return new Error("Invalid prop `" + propFullName + "` of type `" + _typeof(propValue[key]) + "` supplied to `" + componentName + "`, expected `function`.");
         }
     };
-    var State = function State(state) {
+    var Model = function Model(schema) {
+        if (classCallCheck(this, Model), !isObject(schema)) throw Error("[moli] Model need argument which type is a Object");
+        Enumerable(this, "$schema", deepCopy(schema)), appendState(this, this.$schema.state), 
+        appendGetter(this, this, this.$schema.computed), appendAction(this, this, this.$schema);
+    }, appendState = function(_this, state) {
+        if (void 0 === state) return _this;
+        if ("object" !== (void 0 === state ? "undefined" : _typeof(state))) return console.warn("state must be a object!"), 
+        _this;
+        for (var _key in state) mobx.extendObservable(_this, defineProperty({}, _key, state[_key]));
+    }, appendGetter = function(object, context, computeds) {
+        if (isUndefined(computeds)) return object;
+        for (var _key in computeds) !function(_key) {
+            mobx.extendObservable(object, defineProperty({}, _key, mobx.computed(function() {
+                return computeds[_key].apply(context, arguments);
+            })));
+        }(_key);
+    }, appendAction = function(object, context, schema) {
+        if (isUndefined(schema)) return object;
+        for (var _key in schema) !function(_key) {
+            var pro = schema[_key];
+            isFunction(pro) && Enumerable(object, _key, mobx.action.bound(function() {
+                return pro.apply(context, arguments);
+            }));
+        }(_key);
+    }, State = function State(state) {
         classCallCheck(this, State), appendState(this, state);
     }, then = function(fn) {
         var _this = this, _arguments = arguments;
         setTimeout(function() {
             (fn = mobx.action.bound(fn)).apply(_this, _arguments);
         }, 0);
-    }, bound = function(schema) {
-        if (isReactClass(schema)) return bindState(schema);
-        if (isUndefined(schema) || !isObject(schema)) throw Error("this `bound` function should accept a object or a React.Component as arguments");
-        return function(componentClass) {
-            var Custom = bindState(componentClass), BoundComponent = function(_Custom) {
-                function BoundComponent(props, content) {
-                    classCallCheck(this, BoundComponent);
-                    var _this = possibleConstructorReturn(this, (BoundComponent.__proto__ || Object.getPrototypeOf(BoundComponent)).call(this, props, content)), State = function State(schema) {
-                        classCallCheck(this, State), appendState(this, schema.state), appendGetter(this, this, schema.computed), 
-                        appendAction(State.prototype, this, schema);
-                    };
-                    return Enumerable(State.prototype, "$then", then), _this.$state = Object.assign(new State(schema), _this), 
-                    _this;
-                }
-                return inherits(BoundComponent, Custom), BoundComponent;
-            }();
-            for (var _key in schema) !function(_key) {
-                isFunction(schema[_key]) && Enumerable(Custom.prototype, _key, mobx.action.bound(function() {
-                    return schema[_key].apply(this.$state, arguments);
-                }));
-            }(_key);
-            return BoundComponent;
-        };
-    };
-    bound.action = mobx.action.bound;
-    var globalStore = new (function() {
+    }, action$1 = mobx.action.bound, globalStore = new (function() {
         function Store() {
             classCallCheck(this, Store);
         }
@@ -300,7 +277,9 @@
             }
         } ]), Store;
     }())(), createStore = globalStore.createStore.bind(globalStore), injectProps = globalStore.injectProps.bind(globalStore);
-    exports.bound = bound, exports.inject = function(arg) {
+    exports.action = action$1, exports.bound = function(arg) {
+        return isReactClass(arg) ? bindState(arg) : arg;
+    }, exports.inject = function(arg) {
         return isReactClass(arg) ? injectProps(arg) : function(Comp) {
             return Comp ? injectProps(Comp, arg) : injectProps(React.Component, arg);
         };

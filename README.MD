@@ -12,10 +12,14 @@
 npm install moli-react --save
 ```
 
+## todo
+1. 在this.setState()之后的this.state 的变化，不能触发render了
+
 ## 特征
-使用了`inject`,`action`两个装饰器的ComponentClass，ComponentClass均有`state`,`then`两个属性，通过`this.$state`,`this.$then`可以访问到。
+1、使用了`inject`,`bound`两个装饰器的ComponentClass，ComponentClass均有`state`,`then`两个属性，通过`this.$state`,`this.$then`可以访问到。
 `this.state`里的值都是observabled;
 `this.then` 是`this.state`发生变化,导致render之后的回调
+2、改写了this.setState方法，this.setState也是一个action,同时this.setState()过之后的this.state依旧是原来的那个(保持this.state的observable)
 
 ## api
 ### createStore 

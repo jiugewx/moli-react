@@ -1,4 +1,4 @@
-import { isObject, Enumerable, isFunction } from './utils'
+import { Enumerable } from './utils'
 import { getObComponentClass } from "./observer";
 import { appendState } from "./model";
 import * as mobx from "mobx";
@@ -33,6 +33,15 @@ export function bindState(ComponentClass) {
     Enumerable(ObserverComponent.prototype, "then", then);
 
     ObserverComponent.injectMoliState = true;
+
+    // 改写 setState
+    ObserverComponent.prototype.setState = mobx.action.bound(function (data, callback) {
+      for (let name in data) {
+        this.state[name] = data[name];
+      }
+      callback && this.then(callback);
+    });
+
     return getObComponentClass(ObserverComponent)
   }
 
