@@ -13,7 +13,8 @@ npm install moli-react --save
 ```
 
 ## todo
-1. 在this.setState()之后的this.state 的变化，不能触发render了
+
+
 
 ## 特征
 1、使用了`inject`,`bound`两个装饰器的ComponentClass，ComponentClass均有`state`,`then`两个属性，通过`this.$state`,`this.$then`可以访问到。
