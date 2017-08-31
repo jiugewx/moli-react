@@ -13,9 +13,9 @@ npm install moli-react --save
 ```
 
 ## 特征
-使用了`inject`,`bound`两个装饰器的ComponentClass，ComponentClass均有`$state`,`$then`两个属性，通过`this.$state`,`this.$then`可以访问到。
-`this.$state`里的值都是observabled;
-`this.$then` 是`this.$state`发生变化,导致render之后的回调
+使用了`inject`,`action`两个装饰器的ComponentClass，ComponentClass均有`state`,`then`两个属性，通过`this.$state`,`this.$then`可以访问到。
+`this.state`里的值都是observabled;
+`this.then` 是`this.state`发生变化,导致render之后的回调
 
 ## api
 ### createStore 
@@ -100,79 +100,29 @@ export default class List extends Component {
 }
 ```
 
-### bound 绑定私有属性
-1、可以采用schema注入的方式，如
-```
-const header = {
-    state: {
-        value: ''
-    },
-    cancel() {
-        this.value = ''
-    },
-    handleChange(e) {
-        this.value = e.target.value;
-        console.log(this)
-    },
-    handleKeyDown(event) {
-        if (event.which === ESCAPE_KEY) {
-            this.cancel();
-        } else if (event.which === ENTER_KEY) {
-            this.handleSubmit(event);
-        }
-    },
-    handleSubmit() {
-        const { $list } = this.props;
-        if (this.value.trim() !== '') {
-            $list.addItem(this.value);
-            this.cancel();
-        }
-    }
-}
-
-@bound(header)
-export default class Header extends React.Component {
-    // 与header里存在同名的方法，将会被覆盖
-    cancel(){
-
-    }
-
-    // 可以调用 header里的 方法
-    sayHello(){
-        this.cancel();
-    }
-
-    render(){
-
-    }
-}
+### action 绑定私有属性
+action 可以直接注入到ComponentClass里，如
 
 ```
+import {action} from 'moli-react';
 
-以上通过`bound(header)`可以把header注入到 `Header`里。在`Header`里
-
-bound也可以直接注入到ComponentClass里，如
-
-```
-import {bound} from 'moli-react';
-
-@bound
+@action // 注册在ComponentClass上面可以让组件的this.state变成可以观察的，增加了this.then的异步方法
 export default class TodoItem extends React.Component {
     constructor(props) {
         super(props)
         // 使用bound，将使得 this.$state是一个可观察的对象。
-        this.$state = {
+        this.state = {
             value: '',
             editMode: false
         }
     }
     
-    @bound.action // 在严格模式下，必须要使用 @bound.action 将改变 $state 的 function 包裹一下。
+    @action // 严格模式下，改变state的方法必须要包裹一下action
     handleDoubleClick(item = {}) {
-        this.$state.value = item.value || '';
-        this.$state.editMode = true;
-        // this.$then 完成 render 之后的回调
-        this.$then(this.focus);
+        this.state.value = item.value || '';
+        this.state.editMode = true;
+        // this.then 完成 render 之后的回调
+        this.then(this.focus);
     }
 
     // afterRender的回调
@@ -186,9 +136,6 @@ export default class TodoItem extends React.Component {
     }
 }
  ```
-使用 `@bound(schema)`与`@bound`的区别在于:
-* `@bound(schema)`的`schema`中不能使用`this.$state`,而可以直接使用`this`。
-* `@bound(schema)`的`schema`定义的所有的`function`都是`action`。
 
 
 ## publish
