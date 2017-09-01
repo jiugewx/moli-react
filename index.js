@@ -225,7 +225,7 @@
         setTimeout(function() {
             (fn = mobx.action.bound(fn)).apply(_this, _arguments);
         }, 0);
-    }, action$1 = mobx.action.bound, globalStore = new (function() {
+    }, globalStore = new (function() {
         function Store() {
             classCallCheck(this, Store);
         }
@@ -265,25 +265,35 @@
                 return props;
             }
         }, {
-            key: "useStrict",
-            value: function(strictMode) {
-                mobx.useStrict(strictMode);
-            }
-        }, {
             key: "injectProps",
             value: function(componentClass, modelName) {
                 var Custom = bindState(componentClass), props = this.getModelProps(modelName);
                 return Custom.defaultProps = Object.assign(props, Custom.defaultProps), Custom;
             }
         } ]), Store;
-    }())(), createStore = globalStore.createStore.bind(globalStore), injectProps = globalStore.injectProps.bind(globalStore);
-    exports.action = action$1, exports.bound = function(arg) {
+    }())(), injectProps = globalStore.injectProps.bind(globalStore), action$1 = mobx.action.bound, Moli = function() {
+        function Moli() {
+            classCallCheck(this, Moli), this.store = {};
+        }
+        return createClass(Moli, [ {
+            key: "useStrict",
+            value: function(mode) {
+                mobx.useStrict(mode);
+            }
+        }, {
+            key: "useStore",
+            value: function(store) {
+                this.store = globalStore.createStore(store);
+            }
+        } ]), Moli;
+    }();
+    exports["default"] = Moli, exports.action = action$1, exports.bound = function(arg) {
         return isReactClass(arg) ? bindState(arg) : arg;
     }, exports.inject = function(arg) {
         return isReactClass(arg) ? injectProps(arg) : function(Comp) {
             return Comp ? injectProps(Comp, arg) : injectProps(React.Component, arg);
         };
-    }, exports.createStore = createStore, Object.defineProperty(exports, "__esModule", {
+    }, Object.defineProperty(exports, "__esModule", {
         value: !0
     });
 });

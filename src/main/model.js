@@ -1,5 +1,5 @@
 import { computed, action, extendObservable } from "mobx";
-import { deepCopy, isObject, isUndefined, isFunction, Enumerable } from './utils';
+import { deepCopy, isObject, isUndefined, isFunction, Enumerable } from '../utils';
 
 /**
  * 提取某个模式的所有state,actions

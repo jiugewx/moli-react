@@ -1,11 +1,10 @@
-import { isUndefined, isObject, isArray, isString } from './utils'
+import { isUndefined, isObject, isArray, isString } from '../utils'
 import { bindState } from './state';
-import { useStrict } from 'mobx';
 import Model from "./model";
 
 let namePrefix = "$"; // 预制
 
-class Store {
+export default class Store {
   createStore(schemas) {
     if (isUndefined(schemas) || !isObject(schemas)) {
       throw Error('[moli] createStore need argument which type is a Object')
@@ -52,11 +51,6 @@ class Store {
     return props
   }
 
-  // 使用严格模式
-  useStrict(strictMode) {
-    useStrict(strictMode)
-  }
-
   // 注入props
   injectProps(componentClass, modelName) {
     let Custom = bindState(componentClass);
@@ -69,5 +63,4 @@ class Store {
 }
 
 export const globalStore = new Store();
-export const createStore = globalStore.createStore.bind(globalStore);
 export const injectProps = globalStore.injectProps.bind(globalStore);

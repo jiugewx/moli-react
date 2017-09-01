@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { isReactClass } from './utils'
+import { isReactClass } from '../utils'
 import { bindState } from './state';
 import * as mobx from "mobx";
 

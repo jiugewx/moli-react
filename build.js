@@ -40,7 +40,7 @@ function build(target, minify) {
             plugins: ['transform-decorators-legacy', 'transform-class-properties'],
         }),
         alias({
-            'react-dom': emptyModulePath,
+            'react-dom': reactDomModulePath,
         }),
         resolve({
             module: true,
@@ -102,9 +102,7 @@ function build(target, minify) {
         external: function (moduleId) {
             return ({
                 'react': trueFn,
-                'react-dom': function () {
-                    return target === 'browser';
-                },
+                'react-dom': trueFn,
                 'mobx': trueFn,
             }[moduleId] || falseFn)();
         },

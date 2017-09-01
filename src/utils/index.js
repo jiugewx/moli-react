@@ -20,12 +20,16 @@ export const isObject = function (val) {
 
 export const isReactClass = function (componentClass) {
   return isFunction(componentClass) && (
-    componentClass.prototype
-    && !!componentClass.prototype.render
-    && !!componentClass.prototype.setState
-    && !!componentClass.prototype.forceUpdate
-  )
-}
+      componentClass.prototype
+      && !!componentClass.prototype.render
+      && !!componentClass.prototype.setState
+      && !!componentClass.prototype.forceUpdate
+    )
+};
+
+export const isHTMLElement = function (node) {
+  return typeof node === 'object' && node !== null && node.nodeType && node.nodeName;
+};
 
 export const deepCopy = function (object) {
   let newObject = null;
@@ -52,4 +56,4 @@ export const Enumerable = function (target, propertyName, value) {
     writable: false,
     configurable: false,
   })
-}
+};

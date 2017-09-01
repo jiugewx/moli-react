@@ -1,4 +1,4 @@
-import { Enumerable } from './utils'
+import { Enumerable } from '../utils'
 import { getObComponentClass } from "./observer";
 import { appendState } from "./model";
 import * as mobx from "mobx";

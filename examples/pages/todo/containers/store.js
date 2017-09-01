@@ -1,6 +1,4 @@
-import { createStore } from "moli-react";
-
-const store =  createStore({
+export default {
   list: {
     state: {
       list: [
@@ -67,8 +65,4 @@ const store =  createStore({
       this.mode = mode
     },
   }
-});
-
-store.useStrict(true);
-
-export default store
+}
