@@ -2,19 +2,13 @@
 这是一个基于mobx在react上的一个优化实践。
 
 ## todo
-1、各个model之间是否可以互相调用。
-2、model必须是提前创建。在总分支顶部插入。
-3、给action之后的函数增加一个回调。增加了then函数，
+1. model必须是提前创建，在总分支顶部插入。
 
 ## install
 
 ```
 npm install moli-react --save
 ```
-
-## todo
-
-
 
 ## 特征
 1、使用了`inject`,`bound`两个装饰器的ComponentClass，ComponentClass均有`state`,`then`两个属性，通过`this.$state`,`this.$then`可以访问到。
