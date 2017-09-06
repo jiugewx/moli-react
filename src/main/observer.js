@@ -170,6 +170,7 @@ const reactiveMixin = {
   },
 
   componentDidUpdate: function () {
+    console.log('update')
   },
 
   shouldComponentUpdate: function (nextProps, nextState) {
@@ -254,7 +255,7 @@ export const getObComponentClass = function (componentClass) {
   }
 
   return Custom
-}
+};
 
 Observer.propTypes = {
   children: (propValue, key, componentName, location, propFullName) => {

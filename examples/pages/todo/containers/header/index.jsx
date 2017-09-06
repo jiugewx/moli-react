@@ -18,9 +18,13 @@ export default class Header extends React.Component {
     this.state.value = e.target.value;
   }
 
-  @action
   cancel() {
-    this.state.value = '';
+    return this.clear()
+  }
+
+  @action
+  clear() {
+    this.state.value = ''
   }
 
   handleKeyDown(event) {

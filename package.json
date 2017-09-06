@@ -49,5 +49,8 @@
   "homepage": "https://github.com/jiugewx/moli-react#readme",
   "scripts": {
     "build": "node build.js"
+  },
+  "directories": {
+    "example": "examples"
   }
 }
