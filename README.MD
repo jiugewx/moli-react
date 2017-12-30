@@ -16,6 +16,21 @@ npm install moli-react --save
 `this.then` 是`this.state`发生变化,导致render之后的回调,可以这里获取到最新的真实dom结构。
 * 2、改写了this.setState方法，this.setState也是一个action,同时this.setState()过之后的this.state依旧是原来的那个(保持this.state的observable)
 
+## 几个概念
+### store
+这是一颗状态树。跟`redux`的`store`的概念是一样的，全局只有唯一的一颗
+
+### schema 储存在store里的状态模式
+* `schema` 是指`store`里用户自定义的对象,即`store`里每个`key`的`value(值)`。这里将`redux`所定义的每个组件的状态扁平化了。`moli-react`只允许`store`设计成一级的形式，尽可能的扁平化`store`.
+* `schema` 是一个基础模式，当通过`moli-react`的`inject`方法把`schema`的状态给注入到具体的某个组件的时候，这个组件就可以通过`this.props.$[schema]`（我在这里定义为`model模型`）获取到`schema`的状态。
+* `schema` 之间最好不要互相调用。
+
+### model 具体某个组件使用到的状态模型（实例）
+`moli-react`的`inject`方法把`schema`的状态给注入到具体的某个组件的时候，这个组件就可以通过`this.props.$[schema]`（我在这里定义为`model模型`），在组件里可以通过`this.props.$[schema]`获取到一个实例化的Model
+
+### component 组件
+`moli-react`的`bound`方法可以使ComponentClass拥有 `this.state` 和 `this.then` 属性。`inject`默认就给ComponentClass添加了`this.state` 和 `this.then` 属性。
+
 ## api
 ### createStore 
 使用`createStore`可以生成store，一定要在组件路由的顶层注入store,否则将会影响`inject`功能的使用
@@ -54,7 +69,7 @@ createStore({
 * `schema`中的function都是action`(mobx所定义的action)`。
 
 ### inject 共享状态
-`@inject`将把所有在store里的Model注入到组件里。
+`@inject`将把所有在store里的`schema`实例化为`Model`注入到组件里。
 
 `@inject('mode')`,表示只把mode这个Model注入到ComponentClass里。
 也可以使用Array作为参数，如：
@@ -102,7 +117,7 @@ export default class List extends Component {
 ```
 
 ### bound 绑定私有属性
-bound 将使得ComponentClass的state变成可观察，并且给组件增加了this.then方法
+bound 将使得ComponentClass的state变成可观察，并且给组件增加了`this.then`方法
 
 ```
 import {action,bound} from 'moli-react';

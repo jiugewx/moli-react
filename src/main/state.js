@@ -19,7 +19,7 @@ export const then = function (fn) {
 };
 
 
-// 绑定注入$state,$then并设置为观察组件
+// 绑定注入state,then并设置为观察组件
 export function bindState(ComponentClass) {
   if (!ComponentClass.injectMoliState) {
     class ObserverComponent extends ComponentClass {
@@ -29,7 +29,7 @@ export function bindState(ComponentClass) {
       }
     }
 
-    // 增加了$then的方法
+    // 增加了then的方法
     Enumerable(ObserverComponent.prototype, "then", then);
 
     ObserverComponent.injectMoliState = true;
