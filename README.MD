@@ -11,10 +11,10 @@ npm install moli-react --save
 ```
 
 ## 特征
-1、使用了`inject`,`bound`两个装饰器的ComponentClass，ComponentClass均有`state`,`then`两个属性，通过`this.$state`,`this.$then`可以访问到。
+* 1、使用了`inject`,`bound`两个装饰器的ComponentClass，ComponentClass均有`state`,`then`两个属性，通过`this.state`,`this.then`可以访问到。
 `this.state`里的值都是observabled;
-`this.then` 是`this.state`发生变化,导致render之后的回调
-2、改写了this.setState方法，this.setState也是一个action,同时this.setState()过之后的this.state依旧是原来的那个(保持this.state的observable)
+`this.then` 是`this.state`发生变化,导致render之后的回调,可以这里获取到最新的真实dom结构。
+* 2、改写了this.setState方法，this.setState也是一个action,同时this.setState()过之后的this.state依旧是原来的那个(保持this.state的observable)
 
 ## api
 ### createStore 
@@ -48,15 +48,17 @@ createStore({
     }
 })
 ```
-`createStore`所接收的对象(`schemas`)的key将作为Model的name,方便`inject`使用时，可以直接`inject('mode')`的形式将`mode`这个model直接注入到Component,`schemas`值也必须是一个Object(`schema`);
-`schema`中的`state`将作为初始化的`initialState`;
-`schema`中的`computed`是实时计算的的值，可以作为`this[key]`输出,这个值是只读的。
-`schema`中的function都是action。
+* `createStore`所接收的对象(`schemas`)的key将作为Model的name,方便`inject`使用时，可以直接`inject('mode')`的形式将`mode`这个model直接注入到Component,`schemas`值也必须是一个Object(`schema`);
+* `schema`中的`state`将作为初始化的`initialState`;
+* `schema`中的`computed`是实时计算的的值，可以作为`this[key]`输出,这个值是只读的。
+* `schema`中的function都是action`(mobx所定义的action)`。
 
 ### inject 共享状态
 `@inject`将把所有在store里的Model注入到组件里。
+
 `@inject('mode')`,表示只把mode这个Model注入到ComponentClass里。
 也可以使用Array作为参数，如：
+
 `@inject(['mode','items'])`,表示吧`mode`,`itmes`这个两个模式传入到了ComponentClass
 
 在ComponentClass里可以通过`props[$name]`获取到注入的Model，如：`this.props.$mode` = `mode`这个Model;
@@ -100,7 +102,7 @@ export default class List extends Component {
 ```
 
 ### bound 绑定私有属性
-bound 将使得ComponentClass的state变成可观察，增加了this.then方法
+bound 将使得ComponentClass的state变成可观察，并且给组件增加了this.then方法
 
 ```
 import {action,bound} from 'moli-react';
@@ -138,7 +140,7 @@ export default class TodoItem extends React.Component {
 
 ### action 
 
-action = mobx.action.bound
+action = mobx.action.bound `实际上就是mobx的action.bound`
 
 ## publish
 

@@ -27,12 +27,18 @@ export default class TodoItem extends React.Component {
 
   // afterRender的回调
   focus() {
-    this.refs.edit.focus()
+    this.refs.edit.focus();
   }
 
   @action
   handleChange(e) {
     this.state.value = e.target.value;
+    // 以下验证then函数是否可以拿到新建的真实的dom结构
+    this.then(() => {
+      const value = this.state.value;
+      const dom = document.getElementById(value);
+      console.log(dom);
+    })
   }
 
   @action
@@ -43,7 +49,7 @@ export default class TodoItem extends React.Component {
   handleSubmit() {
     const { index, $list } = this.props;
     $list.submitValue(index, this.state.value);
-    this.cancel()
+    this.cancel();
   }
 
   handleKeyDown(event) {
@@ -65,14 +71,16 @@ export default class TodoItem extends React.Component {
     });
 
     return (
-      <li className={completeClass}>
+      <li className={completeClass} id={"id_" + index}>
         <div className="view">
           <input className="toggle" type="checkbox" onClick={() => changeCompleted(index)}/>
           {/* <input className="toggle" type="checkbox" onClick={this.sayHello.bind(this)} /> */}
           <label onDoubleClick={this.handleDoubleClick.bind(this, item)}>{item.value}</label>
           <button className="destroy" onClick={() => removeItem(index)}/>
         </div>
-        <input className="edit"
+        <input
+          id={value}
+          className="edit"
           ref='edit'
           onBlur={this.handleSubmit.bind(this)}
           onChange={this.handleChange.bind(this)}
