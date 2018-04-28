@@ -1,6 +1,7 @@
 import { Enumerable } from '../utils'
 import { getObComponentClass } from "./observer";
 import { appendState } from "./model";
+import { nextTick } from "./nextTick";
 import * as mobx from "mobx";
 
 // state
@@ -11,11 +12,9 @@ class State {
 }
 
 // 提供一个异步进程的渲染方式
-export const then = function (fn) {
-  setTimeout(() => {
-    fn = mobx.action.bound(fn);
-    fn.apply(this, arguments)
-  }, 0)
+export const then = function(fn) {
+  fn = mobx.action.bound(fn);
+  return nextTick(fn);
 };
 
 
@@ -35,8 +34,8 @@ export function bindState(ComponentClass) {
     ObserverComponent.injectMoliState = true;
 
     // 改写 setState
-    ObserverComponent.prototype.setState = mobx.action.bound(function (data, callback) {
-      for (let name in data) {
+    ObserverComponent.prototype.setState = mobx.action.bound(function(data, callback) {
+      for ( let name in data ) {
         this.state[name] = data[name];
       }
       callback && this.then(callback);

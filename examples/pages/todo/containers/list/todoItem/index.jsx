@@ -13,7 +13,8 @@ export default class TodoItem extends React.Component {
     super(props);
     this.state = {
       value: '',
-      editMode: false
+      editMode: false,
+      watcher: 0
     }
   }
 
@@ -32,12 +33,34 @@ export default class TodoItem extends React.Component {
 
   @action
   handleChange(e) {
+    console.log("=======start======");
     this.state.value = e.target.value;
     // 以下验证then函数是否可以拿到新建的真实的dom结构
     this.then(() => {
       const value = this.state.value;
-      const dom = document.getElementById(value);
-      console.log(dom);
+      const watcher = this.state.watcher;
+      const id = value + "_" + watcher;
+      const dom = document.getElementById(id);
+      console.log("nextTick-dom-id:", dom.getAttribute("id"));
+      console.log("nextTick-dom-value:", dom.value);
+      this.state.watcher++; // 第二次改变state，会触发render。先完成上级的异步队列，再进行本级的异步队列
+
+      this.then(() => {
+        console.log("nextTick-1-dom-id:", dom.getAttribute("id"));
+        console.log("nextTick-1-dom-value:", dom.value);
+      });
+
+      Promise.resolve().then(() => {
+        console.log("promise-1:", dom.getAttribute("id"));
+      })
+    });
+
+    this.then(() => {
+      console.log("nextTick-2");
+    });
+
+    this.then(() => {
+      console.log("nextTick-3");
     })
   }
 
@@ -62,8 +85,10 @@ export default class TodoItem extends React.Component {
 
   render() {
     const { changeCompleted, removeItem } = this.props.$list || {};
-    const { value, editMode } = this.state;
+    const { value, editMode, watcher } = this.state;
     const { item = {}, index } = this.props;
+    const id = value + "_" + watcher;
+    console.warn("render-item");
 
     const completeClass = classnames({
       "completed": item.completed,
@@ -79,7 +104,7 @@ export default class TodoItem extends React.Component {
           <button className="destroy" onClick={() => removeItem(index)}/>
         </div>
         <input
-          id={value}
+          id={id}
           className="edit"
           ref='edit'
           onBlur={this.handleSubmit.bind(this)}
