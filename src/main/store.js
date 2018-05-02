@@ -3,18 +3,30 @@ import { bindState } from './state';
 import Model from "./model";
 
 let namePrefix = "$"; // 预制
+let mounted = false;//已经加载
 
 export default class Store {
   createStore(schemas) {
     if (isUndefined(schemas) || !isObject(schemas)) {
       throw Error('[moli] createStore need argument which type is a Object')
     }
-    for (let key in schemas) {
-      const schema = schemas[key];
-      this[namePrefix + key] = new Model(schema)
+
+    const keys = Object.keys(schemas);
+    if (keys.length == 0) {
+      return this;
     }
 
+    keys.map(key => {
+      const schema = schemas[key];
+      this[namePrefix + key] = new Model(schema)
+    });
+
+    mounted = true;
     return this;
+  }
+
+  get mounted() {
+    return mounted;
   }
 
   getStore() {
@@ -41,7 +53,7 @@ export default class Store {
     }
 
     if (isArray(modelName)) {
-      for (let i = 0; i < modelName.length; i++) {
+      for ( let i = 0; i < modelName.length; i++ ) {
         const model = this.getModel(modelName[i], this);
         const name = modelName[i];
         props[namePrefix + name] = model;
