@@ -4,6 +4,12 @@
 ## todo
 1. model必须是提前创建，在总分支顶部插入。
 
+## ChangeLog
+
+### v0.2.4
+- 方法名称变更:this.then => this.$next; 
+
+
 ## install
 
 ```
@@ -11,9 +17,9 @@ npm install moli-react --save
 ```
 
 ## 特征
-* 1、使用了`inject`,`bound`两个装饰器的ComponentClass，ComponentClass均有`state`,`then`两个属性，通过`this.state`,`this.then`可以访问到。
+* 1、使用了`inject`,`bound`两个装饰器的ComponentClass，ComponentClass均有`state`,`$next`两个属性，通过`this.state`,`this.$next`可以访问到。
 `this.state`里的值都是observabled;
-`this.then` 是`this.state`发生变化,导致render之后的回调,可以这里获取到最新的真实dom结构。
+`this.$next` 是`this.state`发生变化,导致render之后的回调,可以这里获取到最新的真实dom结构。
 * 2、改写了this.setState方法，this.setState也是一个action,同时this.setState()过之后的this.state依旧是原来的那个(保持this.state的observable)
 
 ## 几个概念
@@ -29,7 +35,7 @@ npm install moli-react --save
 `moli-react`的`inject`方法把`schema`的状态给注入到具体的某个组件的时候，这个组件就可以通过`this.props.$[schema]`（我在这里定义为`model模型`），在组件里可以通过`this.props.$[schema]`获取到一个实例化的Model
 
 ### component 组件
-`moli-react`的`bound`方法可以使ComponentClass拥有 `this.state` 和 `this.then` 属性。`inject`默认就给ComponentClass添加了`this.state` 和 `this.then` 属性。
+`moli-react`的`bound`方法可以使ComponentClass拥有 `this.state` 和 `this.$next` 属性。`inject`默认就给ComponentClass添加了`this.state` 和 `this.$next` 属性。
 
 ## api
 ### createStore 
@@ -117,12 +123,12 @@ export default class List extends Component {
 ```
 
 ### bound 绑定私有属性
-bound 将使得ComponentClass的state变成可观察，并且给组件增加了`this.then`方法
+bound 将使得ComponentClass的state变成可观察，并且给组件增加了`this.$next`方法
 
 ```
 import {action,bound} from 'moli-react';
 
-@bound // 注册在ComponentClass上面可以让组件的this.state变成可以观察的，增加了this.then的异步方法
+@bound // 注册在ComponentClass上面可以让组件的this.state变成可以观察的，增加了this.$next 的异步方法
 export default class TodoItem extends React.Component {
     constructor(props) {
         super(props)
@@ -137,14 +143,14 @@ export default class TodoItem extends React.Component {
     handleDoubleClick(item = {}) {
         this.state.value = item.value || '';
         this.state.editMode = true;
-        // this.then 完成 render 之后的回调
-        this.then(this.focus);
+        // this.$next 完成 render 之后的回调
+        this.$next(this.focus);
     }
 
     // afterRender的回调
     focus() {
         this.refs.edit.focus()
-        then(() => { this.$state.value = 2333 })
+        this.$next(() => { this.$state.value = 2333 })
     }
 
     render() {

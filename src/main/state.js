@@ -12,13 +12,13 @@ class State {
 }
 
 // 提供一个异步进程的渲染方式
-export const then = function(fn) {
+export const $next = function(fn) {
   fn = mobx.action.bound(fn);
   return nextTick(fn);
 };
 
 
-// 绑定注入state,then并设置为观察组件
+// 绑定注入state,$next 并设置为观察组件
 export function bindState(ComponentClass) {
   if (!ComponentClass.injectMoliState) {
     class ObserverComponent extends ComponentClass {
@@ -28,8 +28,8 @@ export function bindState(ComponentClass) {
       }
     }
 
-    // 增加了then的方法
-    Enumerable(ObserverComponent.prototype, "then", then);
+    // 增加了 $next 的方法
+    Enumerable(ObserverComponent.prototype, "$next", $next);
 
     ObserverComponent.injectMoliState = true;
 
@@ -38,7 +38,7 @@ export function bindState(ComponentClass) {
       for ( let name in data ) {
         this.state[name] = data[name];
       }
-      callback && this.then(callback);
+      callback && this.$next(callback);
     });
 
     return getObComponentClass(ObserverComponent)

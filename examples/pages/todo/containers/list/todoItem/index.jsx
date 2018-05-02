@@ -23,7 +23,7 @@ export default class TodoItem extends React.Component {
   handleDoubleClick(item = {}) {
     this.state.value = item.value || '';
     this.state.editMode = true;
-    this.then(this.focus);
+    this.$next(this.focus);
   }
 
   // afterRender的回调
@@ -36,7 +36,7 @@ export default class TodoItem extends React.Component {
     console.log("=======start======");
     this.state.value = e.target.value;
     // 以下验证then函数是否可以拿到新建的真实的dom结构
-    this.then(() => {
+    this.$next(() => {
       const value = this.state.value;
       const watcher = this.state.watcher;
       const id = value + "_" + watcher;
@@ -45,7 +45,7 @@ export default class TodoItem extends React.Component {
       console.log("nextTick-dom-value:", dom.value);
       this.state.watcher++; // 第二次改变state，会触发render。先完成上级的异步队列，再进行本级的异步队列
 
-      this.then(() => {
+      this.$next(() => {
         console.log("nextTick-1-dom-id:", dom.getAttribute("id"));
         console.log("nextTick-1-dom-value:", dom.value);
       });
@@ -55,11 +55,11 @@ export default class TodoItem extends React.Component {
       })
     });
 
-    this.then(() => {
+    this.$next(() => {
       console.log("nextTick-2");
     });
 
-    this.then(() => {
+    this.$next(() => {
       console.log("nextTick-3");
     })
   }
