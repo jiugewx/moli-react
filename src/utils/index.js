@@ -57,11 +57,3 @@ export const Enumerable = function(target, propertyName, value) {
     configurable: false,
   })
 };
-
-export const isEmptyObject = function(obj) {
-  if (obj == undefined) {
-    return true;
-  }
-
-  return typeof obj == "object" && Object.keys(obj).length == 0;
-}

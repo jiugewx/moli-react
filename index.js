@@ -45,20 +45,23 @@
             mergeReactLifeHook(target, funcName);
         }), target.shouldComponentUpdate || (target.shouldComponentUpdate = reactiveMixin.shouldComponentUpdate);
     }
+    function isNative(Ctor) {
+        return /native code/.test(Ctor.toString());
+    }
     function bindState(ComponentClass) {
         if (!ComponentClass.injectMoliState) {
             var ObserverComponent = function(_ComponentClass) {
                 function ObserverComponent(props, content) {
                     classCallCheck(this, ObserverComponent);
-                    var _this2 = possibleConstructorReturn(this, (ObserverComponent.__proto__ || Object.getPrototypeOf(ObserverComponent)).call(this, props, content));
-                    return _this2.state = new State(_this2.state), _this2;
+                    var _this = possibleConstructorReturn(this, (ObserverComponent.__proto__ || Object.getPrototypeOf(ObserverComponent)).call(this, props, content));
+                    return _this.state = new State(_this.state), _this;
                 }
                 return inherits(ObserverComponent, ComponentClass), ObserverComponent;
             }();
-            return Enumerable(ObserverComponent.prototype, "then", then), ObserverComponent.injectMoliState = !0, 
+            return Enumerable(ObserverComponent.prototype, "$next", $next), ObserverComponent.injectMoliState = !0, 
             ObserverComponent.prototype.setState = mobx.action.bound(function(data, callback) {
                 for (var name in data) this.state[name] = data[name];
-                callback && this.then(callback);
+                callback && this.$next(callback);
             }), getObComponentClass(ObserverComponent);
         }
         return getObComponentClass(ComponentClass);
@@ -218,26 +221,62 @@
                 return pro.apply(context, arguments);
             }));
         }(_key);
-    }, State = function State(state) {
+    }, nextTick = function() {
+        function nextTickHandler() {
+            pending = !1;
+            var copies = callbacks.slice(0);
+            callbacks.length = 0;
+            for (var i = 0; i < copies.length; i++) copies[i]();
+        }
+        var _arguments = arguments, callbacks = [], pending = !1, timerFunc = void 0, handleError = function() {
+            console.log(_arguments);
+        };
+        if ("undefined" != typeof setImmediate && isNative(setImmediate)) timerFunc = function() {
+            setImmediate(nextTickHandler);
+        }; else if ("undefined" == typeof MessageChannel || !isNative(MessageChannel) && "[object MessageChannelConstructor]" !== MessageChannel.toString()) if ("undefined" != typeof Promise && isNative(Promise)) {
+            var p = Promise.resolve();
+            timerFunc = function() {
+                p.then(nextTickHandler);
+            };
+        } else timerFunc = function() {
+            setTimeout(nextTickHandler, 0);
+        }; else {
+            var channel = new MessageChannel(), port = channel.port2;
+            channel.port1.onmessage = nextTickHandler, timerFunc = function() {
+                port.postMessage(1);
+            };
+        }
+        return function(cb, ctx) {
+            cb = cb || function() {}, ctx = ctx || function() {};
+            var _resolve = void 0;
+            if (callbacks.push(function() {
+                if (cb) try {
+                    cb.call(ctx);
+                } catch (e) {
+                    handleError();
+                } else _resolve && _resolve(ctx);
+            }), pending || (pending = !0, timerFunc()), !cb && "undefined" != typeof Promise) return new Promise(function(resolve, reject) {
+                _resolve = resolve;
+            });
+        };
+    }(), State = function State(state) {
         classCallCheck(this, State), appendState(this, state);
-    }, then = function(fn) {
-        var _this = this, _arguments = arguments;
-        setTimeout(function() {
-            (fn = mobx.action.bound(fn)).apply(_this, _arguments);
-        }, 0);
-    }, globalStore = new (function() {
+    }, $next = function(fn) {
+        return fn = mobx.action.bound(fn), nextTick(fn);
+    }, mounted = !1, globalStore = new (function() {
         function Store() {
             classCallCheck(this, Store);
         }
         return createClass(Store, [ {
             key: "createStore",
             value: function(schemas) {
+                var _this = this;
                 if (isUndefined(schemas) || !isObject(schemas)) throw Error("[moli] createStore need argument which type is a Object");
-                for (var key in schemas) {
+                var keys = Object.keys(schemas);
+                return 0 == keys.length ? this : (keys.map(function(key) {
                     var schema = schemas[key];
-                    this["$" + key] = new Model(schema);
-                }
-                return this;
+                    _this["$" + key] = new Model(schema);
+                }), mounted = !0, this);
             }
         }, {
             key: "getStore",
@@ -270,10 +309,15 @@
                 var Custom = bindState(componentClass), props = this.getModelProps(modelName);
                 return Custom.defaultProps = Object.assign(props, Custom.defaultProps), Custom;
             }
+        }, {
+            key: "mounted",
+            get: function() {
+                return mounted;
+            }
         } ]), Store;
     }())(), injectProps = globalStore.injectProps.bind(globalStore), action$1 = mobx.action.bound, Moli = function() {
         function Moli() {
-            classCallCheck(this, Moli), this.store = {};
+            classCallCheck(this, Moli), this.store = globalStore.createStore({});
         }
         return createClass(Moli, [ {
             key: "useStrict",
@@ -282,8 +326,8 @@
             }
         }, {
             key: "useStore",
-            value: function(store) {
-                this.store = globalStore.createStore(store);
+            value: function(storeState) {
+                this.store.mounted || (this.store = globalStore.createStore(storeState));
             }
         } ]), Moli;
     }();
