@@ -4,7 +4,7 @@ export default {
       list: [
         {
           completed: false,
-          value: '111'
+          value: 'initial-state'
         },
         {
           completed: true,

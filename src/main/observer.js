@@ -170,7 +170,6 @@ const reactiveMixin = {
   },
 
   componentDidUpdate: function () {
-    console.log('update')
   },
 
   shouldComponentUpdate: function (nextProps, nextState) {

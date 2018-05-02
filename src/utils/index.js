@@ -1,24 +1,24 @@
-export const isUndefined = function (value) {
+export const isUndefined = function(value) {
   return typeof value === 'undefined';
 };
 
-export const isFunction = function (value) {
+export const isFunction = function(value) {
   return typeof value === 'function';
 };
 
-export const isString = function (value) {
+export const isString = function(value) {
   return typeof value === 'string';
 };
 
-export const isArray = function (val) {
+export const isArray = function(val) {
   return Object.prototype.toString.call(val) === '[object Array]';
 };
 
-export const isObject = function (val) {
+export const isObject = function(val) {
   return !isArray(val) && (typeof val === "object");
 };
 
-export const isReactClass = function (componentClass) {
+export const isReactClass = function(componentClass) {
   return isFunction(componentClass) && (
       componentClass.prototype
       && !!componentClass.prototype.render
@@ -27,20 +27,20 @@ export const isReactClass = function (componentClass) {
     )
 };
 
-export const isHTMLElement = function (node) {
+export const isHTMLElement = function(node) {
   return typeof node === 'object' && node !== null && node.nodeType && node.nodeName;
 };
 
-export const deepCopy = function (object) {
+export const deepCopy = function(object) {
   let newObject = null;
   if (isArray(object)) {
     newObject = [];
-    for (let i = 0; i < object.length; i++) {
+    for ( let i = 0; i < object.length; i++ ) {
       newObject.push(deepCopy(object[i]));
     }
   } else if (isObject(object)) {
     newObject = {};
-    for (let k in object) {
+    for ( let k in object ) {
       newObject[k] = deepCopy(object[k]);
     }
   } else {
@@ -49,7 +49,7 @@ export const deepCopy = function (object) {
   return newObject;
 };
 
-export const Enumerable = function (target, propertyName, value) {
+export const Enumerable = function(target, propertyName, value) {
   Object.defineProperty(target, propertyName, {
     enumerable: false,
     value: value,
@@ -57,3 +57,11 @@ export const Enumerable = function (target, propertyName, value) {
     configurable: false,
   })
 };
+
+export const isEmptyObject = function(obj) {
+  if (obj == undefined) {
+    return true;
+  }
+
+  return typeof obj == "object" && Object.keys(obj).length == 0;
+}
