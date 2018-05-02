@@ -132,7 +132,7 @@ import {action,bound} from 'moli-react';
 export default class TodoItem extends React.Component {
     constructor(props) {
         super(props)
-        // 使用bound，将使得 this.$state是一个可观察的对象。
+        // 使用bound，将使得 this.state是一个可观察的对象。
         this.state = {
             value: '',
             editMode: false
@@ -150,7 +150,7 @@ export default class TodoItem extends React.Component {
     // afterRender的回调
     focus() {
         this.refs.edit.focus()
-        this.$next(() => { this.$state.value = 2333 })
+        this.$next(() => { this.state.value = 2333 })
     }
 
     render() {
